@@ -1,0 +1,96 @@
+============================================================
+STEP 1: Extracting FARS accident records for Arkansas
+============================================================
+  2008: 552 Arkansas fatal crash records extracted
+  2009: 532 Arkansas fatal crash records extracted
+  2010: 517 Arkansas fatal crash records extracted
+  2011: 509 Arkansas fatal crash records extracted
+  2012: 504 Arkansas fatal crash records extracted
+  2013: 460 Arkansas fatal crash records extracted
+  2014: 436 Arkansas fatal crash records extracted
+  2015: 491 Arkansas fatal crash records extracted
+  2016: 504 Arkansas fatal crash records extracted
+  2017: 486 Arkansas fatal crash records extracted
+  2018: 476 Arkansas fatal crash records extracted
+  2019: 473 Arkansas fatal crash records extracted
+  2020: 598 Arkansas fatal crash records extracted
+
+  Total crash-level records: 6,538
+
+============================================================
+STEP 2: Aggregating to county × year
+============================================================
+  County-year observations: 946
+  Year range: 2008–2020
+  Unique counties: 75
+
+============================================================
+STEP 3: Loading wet/dry panel
+============================================================
+  Wet/dry panel rows: 1,125
+  Transition events: 12
+  Panel years: 2010–2024
+
+============================================================
+STEP 4: Constructing C&S-A cohort identifiers
+============================================================
+  Ever-treated counties (2010–2024): 12
+  Neighbor (spillover) counties: 63
+  Clean never-treated controls: 0
+
+  Treated cohorts within FARS window (2008–2020):
+    Boone            FIPS=05009  year=2010  (Countywide wet vote)
+    Clark            FIPS=05019  year=2010  (Countywide wet vote)
+    Benton           FIPS=05007  year=2012  (Countywide wet vote)
+    Sharp            FIPS=05135  year=2012  (Countywide wet vote)
+    Saline           FIPS=05125  year=2014  (Countywide wet vote)
+    Columbia         FIPS=05027  year=2014  (Countywide wet vote)
+    Little River     FIPS=05081  year=2016  (Countywide retail legalization)
+    Randolph         FIPS=05121  year=2018  (Countywide wet vote)
+    Van Buren        FIPS=05141  year=2020  (Countywide wet vote)
+    Sevier           FIPS=05133  year=2020  (Countywide wet vote)
+
+============================================================
+STEP 5: Extending panel back to 2008–2009
+============================================================
+  Panel rows after extension: 1,275  (2008–2024)
+
+============================================================
+STEP 6: Merging FARS outcomes onto wet/dry panel
+============================================================
+  Merged rows: 975
+  County-years with 0 fatal crashes: 29
+  County-years with FARS data: 946
+  FARS FIPS not in wet/dry panel: none — clean merge
+
+============================================================
+STEP 7: Finalizing and exporting
+============================================================
+
+  ✓ Main panel saved: arkansas_did_panel.csv
+    Rows: 975  |  Columns: 20
+  ✓ Transition summary saved: transition_summary.csv
+
+============================================================
+DESCRIPTIVE SUMMARY (2010–2020 estimation window)
+============================================================
+  Obs: 825  (75 counties × up to 11 years)
+  Treated units:       12 counties
+  Neighbor units:      63 counties
+  Clean controls:      0 counties
+
+  Fatal crashes (mean per county-year):  6.61
+  Alcohol crashes (mean per county-year): 1.83
+  Avg alcohol share: 0.269
+
+  Treated cohorts in FARS window (event_year ≤ 2020):
+    Boone            cohort=2010  pre=2yr  post=10yr
+    Clark            cohort=2010  pre=2yr  post=10yr
+    Benton           cohort=2012  pre=4yr  post=8yr
+    Sharp            cohort=2012  pre=4yr  post=8yr
+    Saline           cohort=2014  pre=6yr  post=6yr
+    Columbia         cohort=2014  pre=6yr  post=6yr
+    Little River     cohort=2016  pre=8yr  post=4yr
+    Randolph         cohort=2018  pre=10yr  post=2yr
+    Van Buren        cohort=2020  pre=12yr  post=0yr
+    Sevier           cohort=2020  pre=12yr  post=0yr

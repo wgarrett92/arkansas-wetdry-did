@@ -1,0 +1,46 @@
+# Large raw data files
+Churches/
+usa_00006.csv
+*.dta
+*.zip
+*.gz
+*.tar
+*.xpt
+*.sas7bdat
+*.xlsx
+*.xls
+*.numbers
+
+# Stata files
+*.log
+*.smcl
+*.stswp
+*.gph
+*.ado.bak
+
+# LaTeX artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS junk
+.DS_Store
+Thumbs.db
+.Rhistory
+
+# Old gitignore (no dot)
+gitignore

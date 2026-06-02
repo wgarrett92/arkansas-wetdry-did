@@ -1,0 +1,13 @@
+county,fips,event_date,event_year,policy_scope,notes,in_fars_window,pre_periods_available
+Boone,05009,2010-11-02,2010,Countywide wet vote,Countywide sale and manufacture of alcoholic beverages approved.,1,2
+Clark,05019,2010-11-02,2010,Countywide wet vote,Countywide retail alcohol sales approved.,1,2
+Benton,05007,2012-11-06,2012,Countywide wet vote,Retail alcohol sales approved countywide.,1,4
+Sharp,05135,2012-11-06,2012,Countywide wet vote,Sale and manufacture of alcoholic beverages approved countywide.,1,4
+Saline,05125,2014-11-04,2014,Countywide wet vote,County became wet on election night; permits followed.,1,6
+Columbia,05027,2014-11-04,2014,Countywide wet vote,County became wet on election night; permits followed.,1,6
+Little River,05081,2016-11-08,2016,Countywide retail legalization,Approved plan allowing beer and wine sales in retail stores; implementation details followed locally.,1,8
+Randolph,05121,2018-11-06,2018,Countywide wet vote,County voted wet.,1,10
+Van Buren,05141,2020-11-03,2020,Countywide wet vote,County voted wet.,1,12
+Sevier,05133,2020-11-03,2020,Countywide wet vote,County voted wet.,1,12
+Hot Spring,05059,2022-11-08,2022,Countywide wet vote,County voted wet.,0,14
+Polk,05113,2022-11-08,2022,Countywide wet vote,County voted wet.,0,14
