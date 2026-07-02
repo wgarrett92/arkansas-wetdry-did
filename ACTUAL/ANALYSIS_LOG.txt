@@ -1,0 +1,1076 @@
+================================================================================
+ANALYSIS_LOG.txt  --  Decision & Provenance Log
+Arkansas Wet/Dry DiD  |  "Alcohol Access Laws & Road Safety Externalities"
+Author: Will Garrett (Clemson).  Purpose: JOB-MARKET PAPER.
+================================================================================
+
+WHAT THIS FILE IS
+-----------------
+The lab notebook / audit trail for the paper. Every consequential analytical
+decision gets an entry here: WHAT was decided, WHY (the referee-facing
+justification), HOW (which script/section produced it), the RESULT, and where it
+lands in the MANUSCRIPT. When you sit down to write, PART B (Paper Crosswalk)
+maps each paper section to the entries and numbers that support it.
+
+This complements -- does not replace -- the operational docs:
+  README.txt          the standing project description (data, specs, files)
+  RERUN_RUNBOOK.txt   the ordered re-run recipe for the Madison/Sebastian recode
+This file is the DECISION-FIRST view (why did we do X?), which those two lack.
+
+*** MAINTENANCE CONVENTION (standing instruction, 2026-07-01) ***
+  - Append a PART-A entry for EVERY analytical change, in the template below.
+  - Newest entries at the BOTTOM of PART A; never rewrite history -- if a
+    decision is reversed, add a new entry and mark the old one SUPERSEDED (#n).
+  - Convert relative dates to absolute (YYYY-MM-DD).
+  - Keep the do-file header comments in sync (each analysis .do points here).
+  - When a number changes, update PART B and the README figure/results text.
+  Claude: continue maintaining this file on every future session by default.
+
+ENTRY TEMPLATE
+--------------
+  [YYYY-MM-DD] #NN  Short title
+    DECISION:  what was chosen / done
+    WHY:       rationale; the justification a referee would demand
+    HOW:       script + section/lines; key command/flags
+    RESULT:    key numbers / output files
+    PAPER:     manuscript section it supports + a note on how to write it
+    STATUS:    done | open | superseded by #MM
+
+
+================================================================================
+PART T  --  THEORETICAL MODEL EVOLUTION (backfilled 2026-07-01)
+================================================================================
+
+WHAT THIS IS
+  The derivation history of the theoretical model -- every consequential change
+  to the utility / impaired-miles / crash-probability structure, WHY it changed,
+  and what it bought. PART A logs empirical decisions; this logs MODEL decisions
+  (the crosswalk previously punted these to the README -- this is their home now).
+  Placed first because the theory is written first in the manuscript.
+  DATES: the source transcripts are undated, so entries are SEQUENCE-accurate but
+  calendar-APPROXIMATE -- fix to absolute dates if chat timestamps are recovered.
+  Append newest at the bottom; mark superseded model forms, do not delete them.
+
+  END-STATE MODEL (what the paper carries): quasi-linear utility with an
+  accident-disutility term; purely multiplicative impaired miles m = gamma*a*d
+  with d = delta_c * n; crash object lifted from individual pi_i to county Pi_c
+  with an inbound (attractor) term. Entries T1-T8 show how each piece arrived.
+
+[2026-03] T1  Initial spatial travel-cost setup (per-unit cost, additive miles)
+  MODEL:     U_i = u(a_i) + x_i ;  budget  p*a_i + tau(d_i)*a_i + x_i = y_i
+             (tau a PER-UNIT travel cost -> effective price p* = p + tau(d_i)).
+             D_c in {0,1}; d_i = 0 if wet, dbar_i > 0 if dry.
+             Crash prob pi_i = pi(a_i, m_i); impaired miles m_i = alpha*a_i + beta*d_i.
+  WHY:       Hotelling travel-cost + quasi-linear utility (kills income effects,
+             so policy responses are pure price effects). alpha*a_i = impaired
+             miles scaling with consumption; beta*d_i = the return trip from a
+             distant purchase.
+  PREDICTS:  a^dry < a^wet (Prediction 1); net crash effect ambiguous
+             (consumption + vs distance -).
+  STATUS:    superseded -- per-unit cost by T2, additive miles by T3 (see R in PART R).
+
+[2026-04] T2  Fixed trip cost replaces per-unit travel cost
+  CHANGE:    budget -> p*a_i + T(d_i) + x_i = y_i ;  effective per-unit price
+             p* = p + T(d_i)/a_i, which FALLS with quantity.
+  WHY:       A purchase trip is undertaken once regardless of quantity, so trip
+             cost is fixed, not per-unit; a per-unit cost that rises with quantity
+             is economically wrong. Side effect: builds in stockpiling (dry-county
+             buyers make fewer, larger trips) -- carried forward as a reason
+             aggregate VMT can be quiet even when the mechanism is real (see T7).
+  STATUS:    current.
+
+[2026-04] T3  Additive -> multiplicative impaired miles
+  CHANGE:    m_i = alpha*a_i + gamma*a_i*d_i  (distance enters ONLY interacted
+             with consumption).
+  WHY:       The additive beta*d_i term is harm-relevant only if the driver is
+             impaired on the return leg -- i.e. it is alpha*a_i in disguise unless
+             distance is conditioned on having consumed. Off-premise retail is the
+             treatment margin (drink at/after purchase), so the dangerous return
+             trip is jointly determined by a and d. Multiplicative form makes
+             distance AMPLIFY the risk of a given consumption level rather than
+             generate risk independently.
+  KEPT BOTH (transitional): alpha*a_i (impaired miles regardless of purchase
+             location; persists after wet) vs gamma*a_i*d_i (return-trip miles;
+             eliminated as d -> 0).
+  STATUS:    superseded by T4 (alpha absorbed).
+
+[2026-04] T4  Distance normalization d = delta_c * n ; collapse to pure multiplicative
+  CHANGE:    d_i = delta_c * n_i, with delta_c = 1 (wet) or > 1 (dry, scaling with
+             county boundaries crossed) and n_i = within-county distance. Then
+             m_i = a_i(alpha + gamma*delta_c*n_i), which at delta_c=1 shows alpha is
+             redundant -> COLLAPSE to  m_i = gamma*a_i*delta_c*n_i = gamma*a_i*d_i.
+  WHY:       d does NOT drop to 0 when a county goes wet -- residents still drive
+             within-county to the store (user objection). Normalizing within-county
+             travel to n and letting dry status amplify via delta_c fixes this and
+             unifies everything under one mechanism: impaired miles scale with
+             consumption and distance; dry status amplifies distance.
+  STATUS:    current (this is the headline impaired-miles spec).
+
+[2026-04] T5  Accident-disutility term (Becker internalization)
+  CHANGE:    U_i = u(a_i) + x_i - lambda*pi(a_i,m_i)*kappa ;  kappa = accident cost,
+             lambda in [0,1] = internalization. 0<lambda<1 = partial internalization
+             -> interior solution, links to Becker (1968).
+  WHY:       Justifies why consumers don't drink to oblivion; supplies a marginal
+             condition. Rejected the alternative expected-legal-cost form (-p(m)*F)
+             as pulling toward structural estimation beyond scope -- kept only as a
+             mentioned extension.
+  PAPER:     Beamer slide 7 utility + variable table updated to this form.
+  STATUS:    current.
+
+[2026-04~05] T6  Comparative-static sign discipline (multiple corrections)
+  ISSUE:     Differentiating w.r.t. dryness D_c while LABELLING channels by "going
+             wet" produced repeated sign errors. Product-rule expansion of
+             gamma*a*d gives THREE terms: consumption, distance-direct, and a
+             distance-consumption interaction.
+  RESOLUTION (final, correct): the full chain rule KEEPS dpi/dm in front of both
+             distance terms (an earlier claim that it "absorbed out" was wrong):
+               d(pi)/dD_c = dpi/da * da/dp* * dp*/dD_c                    (consumption)
+                          + dpi/dm * gamma*n*a * ddelta_c/dD_c            (distance-direct)
+                          + dpi/dm * gamma*n*delta_c * da/dp* * dp*/dD_c  (interaction)
+             Signs: ddelta_c/dD_c > 0 (dry raises delta), da/dp* < 0, dp*/dD_c > 0.
+             The travel-distance effect is itself AMBIGUOUS (its two components
+             oppose), so the static has three competing forces, not two.
+  WHY IT MATTERS: the ambiguity IS the paper's tension; the earlier "distance
+             unambiguously negative" framing was an artifact of the sign slips.
+  LESSON:    state the derivative-wrt-D_c and the channel labels in ONE consistent
+             frame; keep dpi/dm so all three terms are in probability units.
+  STATUS:    current.
+
+[2026-06] T7  VMT as observable proxy for the distance channel (NOT a swap for m)
+  DECISION:  Keep m_i LATENT. Do NOT (a) try to measure impaired miles (no data;
+             inferring them from FARS crashes is circular), or (b) substitute VMT
+             for m_i (severs the link to pi and, worse, VMT is blind to the
+             consumption term alpha*a since people drink near home).
+  MAPPING:   V_c = V_base + V_acq; the acquisition component's impaired return leg
+             is the empirical shadow of gamma*a*d. VMT tests the DISTANCE channel
+             only; the crash ATTs carry the net effect. It DISCRIMINATES H1
+             (low-baseline-traffic) from H2 (attractor: inbound VMT rise).
+  CAVEAT:    DVMT is total travel, not impaired miles; signal-to-noise is rough and
+             HPMS rural roads are heavily modeled -> expect attenuation.
+  PAPER:     Mechanisms. See PART A #11 and VMT_NOTES.txt.
+  STATUS:    current.
+
+[2026-06] T8  Lift crash object from individual pi_i to county Pi_c (attractor becomes native)
+  CHANGE:    Realized crashes defined at the COUNTY of crash (as FARS records and
+             as C&S-A estimates):  Pi_c = Pi(A_c, M_c), with
+               M_c = gamma*a_own*delta_c*n                            (own residents, falls as delta_c -> 1)
+                   + sum_{j in nbrs} gamma*a_j*d_{j->c}*1(c wet)      (inbound, jumps from 0).
+  WHY:       At the individual level an inbound driver's crash has nowhere to live;
+             defining Pi at the county adds a FOURTH, positive term (the inbound
+             jump) that the single-agent static structurally cannot contain. Large
+             catchment (rural, dry-surrounded) -> inbound dominates -> net POSITIVE;
+             small catchment (urban) -> own-resident reduction wins -> NEGATIVE. The
+             rural/urban reversal becomes a PREDICTION, not an anomaly -- this is
+             the paper's spatial contribution.
+  DISCIPLINE: two-layer model -- keep individual pi_i in utility (behavior chosen
+             against own perceived risk); county Pi_c is the realized, measured
+             outcome. On aggregation (pi nonlinear -> Jensen), define Pi_c as a
+             county hazard over county exposure directly (representative-county
+             primitive), stated as a modeling choice, not derived from exact
+             micro-aggregation.
+  FRAMING:   Do NOT write "the model was wrong and we patched it." Write "the
+             within-county prediction is correct and is SWAMPED by a cross-county
+             externality the prior literature ignored." The extension is principled
+             (not post-hoc) because it makes NEW checkable predictions: the
+             inbound-VMT signature (T7) and the symmetric spillover pattern
+             (PART A #10 + spillover).
+  PAPER:     Theory Parts 1-2; motivates heterogeneity (#15) and the attractor tests.
+  STATUS:    current.
+
+
+================================================================================
+PART A  --  DECISION LOG (chronological)
+================================================================================
+
+[2026-03] #1  Treatment margin = countywide OFF-PREMISE wet vote
+  DECISION:  Define "going wet" as the countywide off-premise retail vote date;
+             carry the on-premise / liquor-by-the-drink / private-club / Sunday
+             margins as context, not as the treatment.
+  WHY:       "Going wet" is a bundle that switches on at different dates and
+             sub-county geographies. The off-premise countywide vote is the one
+             clean, dated, county-level margin; on/off-premise splits are not
+             recoverable from the state GIS (needs ABC permit-type records).
+  HOW:       transition_summary.csv; cohorts in README "TREATMENT DEFINITION".
+  RESULT:    7 cohorts, 2010-2022 (see #6 for the 13th county).
+  PAPER:     Institutional Background + Treatment Definition. Write the bundle
+             explicitly and defend the off-premise date as the sharp margin.
+  STATUS:    done
+
+[2026-03] #2  Estimator = Callaway & Sant'Anna (2021), csdid
+  DECISION:  Staggered DiD via csdid group-time ATT. Use method(reg) (not DRIPW)
+             on single-county cohorts; comparison = not-yet-treated (notyet).
+  WHY:       Staggered adoption + heterogeneous timing => TWFE is biased. DRIPW
+             hits propensity-score separation on single-county cohorts (g2016,
+             g2018) once >1-2 covariates enter; method(reg) avoids it.
+  HOW:       02_csdid_estimation_v2.do. csdid discipline: estimates restore
+             before EACH estat; wrap small-cohort estat in capture noisily.
+  RESULT:    Effective sample 11 counties / 6 cohorts (g2022 has no NYT
+             comparators, drops).
+  PAPER:     Empirical Strategy. Cite C&S-A; justify NYT and method(reg).
+  STATUS:    done
+
+[2026-03..06] #3  Control-group framing (within-county vs spillover)
+  DECISION:  Within-county direct-effect control = ALWAYS-DRY never-treated.
+             Always-wet neighbors are DEMOTED to a robustness / spillover role.
+             Spillover design uses always-wet as controls.
+  WHY:       Always-wet counties have systematically different crash
+             trajectories and FAIL the pre-trend test (p~0.000). Not-yet-treated
+             + always-dry are drawn from the same population (eventual/never
+             adopters).
+  HOW:       est_sample = (cohort>0 | always_dry==1) in the recode; Robustness A
+             adds always-wet (02_csdid Sec 4).
+  RESULT:    See #14 -- always-dry design is the only one with clean pre-trends.
+  PAPER:     Empirical Strategy / Identification. This framing is the backbone.
+  STATUS:    done (crystallized as the headline in #14)
+
+[2026-06] #4  Border-state augmentation + distance-to-nearest-wet metric
+  DECISION:  Add out-of-state (OOS) wet border counties as access sources.
+             Primary distance = pop-weighted centroid -> nearest wet county's
+             BORDER (dist_border_aug); robustness = centroid->centroid
+             (dist_popcen_aug). Cross-Mississippi/Red-river OOS access gated to a
+             bridge whitelist.
+  WHY:       Most AR dry counties border a wet OOS county; ignoring OOS access
+             overstates isolation. Residents drive to the wet EDGE (stores
+             cluster at the county line), so border-distance measures access;
+             centroid distance measures geometry. Straight-line distance
+             overstates access across rivers with no bridge.
+  HOW:       build_border_augment_v2.py; columns in AUGMENT_NOTES_v2.txt.
+  RESULT:    Median pre-treatment distance: border ~10 mi vs popcen ~26 mi. OOS
+             is nearest source for 4 treated (Little River, Polk, Sevier, Sharp).
+  PAPER:     Data / Spatial access. Report the metric choice dominates the OOS
+             choice; use dist_border_aug primary, split on nearest_wet_is_oos.
+  STATUS:    done
+
+[2026-06] #5  OOS border-state legislative coding (wet_from_year)
+  DECISION:  MO/OK wet all-window; TX (Bowie/Cass) off-premise beer/wine only,
+             from 2013; LA partial (parish/ward); MS/TN river, bridge-gated.
+  WHY:       Access timing differs by state law; TX Texarkana was dry for
+             off-premise before 2013 (AR historically supplied TX, not reverse).
+  HOW:       oos_wet_reference_v2.csv (editable wet_from_year).
+  RESULT:    OOS ring validated 100% vs panel n_wet_neighbors.
+  PAPER:     Data appendix. FLAG OPEN: verify TX Bowie/Cass + facing LA parishes
+             against state ABC before submission (README issue #5).
+  STATUS:    open (verification)
+
+[2026-06-19] #6  Madison County (05087) = 13th treated county, cohort 2012
+  DECISION:  Recode Madison from "always-wet" to treated, g2012.
+  WHY:       AR Secretary of State returns: countywide off-premise wet vote
+             Nov 6 2012, 57.29% yes -- the SAME election as Benton/Sharp.
+             Corroborated by DFA/ABC "wet with exceptions" list + press. The
+             Jan-2017 NABCA paper listing Madison "dry" is an error; the other
+             Nov-2012 "Madison County" wet vote is in KENTUCKY (irrelevant).
+  HOW:       Distance side: build_border_augment_v2_patched.py (PLACE 1).
+             Estimation side: patch_madison_sebastian.do (PLACE 2), integrated
+             into 02_csdid lines ~83-210 and do-ne by 04b. BOTH places must agree
+             (RERUN_RUNBOOK "THE ONE IDEA").
+  RESULT:    g2012 now = 3 counties (Benton, Sharp, Madison). QC: 13 treated.
+             Madison is URBAN under RUCC (Fayetteville metro) -> urban arm.
+  PAPER:     Data / sample construction footnote; robustness = drop Madison
+             (headline unaffected -- see #13).
+  STATUS:    done
+
+[2026-06-19] #7  Sebastian/Logan/Woodruff -> wet + partial_wet flag
+  DECISION:  Code Sebastian (Fort Smith), Logan, Woodruff as WET all-window,
+             flagged partial_wet; keep never-treated (so they sit in the
+             always-wet/excluded pool, NOT the dry-control pool). Run ONE
+             conservative-control robustness dropping partial_wet.
+  WHY:       Verified vs the ABC wet/dry GIS layer: 29 fully-dry controls are
+             "Dry with ABC Permits" = private clubs (on-premise) -> clean on the
+             off-premise margin. Sole exception Fort Smith (~75% of Sebastian pop,
+             wet off-premise). Logan/Woodruff product-limited wet. Also keep
+             Sebastian as a distance SOURCE even if dropped as an estimation unit.
+  HOW:       patch_madison_sebastian.do; dry_control_offpremise_check.txt.
+  RESULT:    Conservative == baseline by construction (partial_wet units already
+             outside the dry-control pool). Confirmed #13/#14.
+  PAPER:     Control-purity paragraph + one conservative-control robustness row.
+  STATUS:    done
+
+[2026-06-29] #8  nonalc_fatal_crashes as a MECHANISM outcome (not a placebo)
+  DECISION:  Add nonalc_fatal = fatal - alcohol (+ per-capita). Treat it as a
+             mechanism-decomposition outcome, run through the SAME spec battery
+             + event study as alcohol.
+  WHY:       It is NOT a clean placebo: the attractor relocates TRAFFIC, so the
+             exposure channel can move sober crashes too. alcohol ~ impairment +
+             exposure; nonalc ~ exposure alone; the alcohol-minus-nonalc contrast
+             isolates impairment. Flat nonalc pre-trends = common-confounder
+             diagnostic that licenses the alcohol read.
+  HOW:       FARS build; alcohol flag joins DR_DRINK from VEHICLE.CSV (DRUNK_DR
+             dropped from ACCIDENT.CSV in 2021+); alcohol_flag_source tracks it.
+  RESULT:    Headline nonalc Pre_avg flat (p=0.920); see #14.
+  PAPER:     Mechanisms. Present the decomposition, not a placebo claim.
+  STATUS:    done
+
+[2026-06-29] #9  Rural/urban classifier = USDA ERS RUCC (not the ad hoc 20k cut)
+  DECISION:  PRIMARY rural = RUCC 2013 nonmetro (codes 4-9); 2023 as robustness;
+             + rucc_adjacent / rural_nonadj flags. Re-test the headline reversal.
+  WHY:       The 20k population cutoff is indefensible; RUCC is standard. 6 of 12
+             treated counties flip (split moves 5R/7U -> 9R/3U). Flips are
+             mechanism-consistent (Little River is Texarkana-metro -> urban;
+             nonmetro-with-a-town counties are catchment-capable -> rural). So it
+             is a genuine RE-TEST, and ATTs WILL move.
+  HOW:       merge_rucc.py -> rural_2013 (primary). 04b splits on it.
+  RESULT:    See #15 -- under RUCC the alcohol rural+/urban- reversal does NOT
+             survive in the point estimates.
+  PAPER:     Heterogeneity. Lead with RUCC; report 20k as robustness only.
+  STATUS:    done
+
+[2026-06-29] #10  Driver-origin attractor test (FARS DR_ZIP)
+  DECISION:  Direct test of crash relocation: crash-county x year share of
+             involved (and DR_DRINK==1) drivers whose HOME county is still-dry
+             (orig_sh_home_dry[_drink]), predicted to RISE in newly-wet rural.
+  WHY:       DR_ZIP = the driver's home ZIP (person, not car) -> home county via
+             HUD xwalk; superior to registration STATE. Makes the attractor
+             hypothesis independently testable (the discipline check in README
+             THEORY).
+  HOW:       build_driver_origin.py -> *_origin.csv (orig_* cols on the panel).
+  RESULT:    Merged; orig_* NaN where no involved drivers. Test of the
+             post-treatment rise still OPEN.
+  PAPER:     Mechanisms / attractor. This is the novel direct evidence -- prioritize.
+  STATUS:    open (estimation of the rise not yet run)
+
+[2026-06] #11  VMT mechanism test (ARDOT DVMT) + coverage caveat
+  DECISION:  Use county DVMT to separate "fewer miles" from "safer miles";
+             interact VMT change with dist_border_aug. State that VMT is a
+             2014+-cohort / 2013-2023-window analysis.
+  WHY:       DVMT is the empirical shadow of the MILES terms (blind to direct
+             consumption pi_a); under the attractor it discriminates H2 (inbound
+             VMT rise) from H1 (low baseline traffic). But coverage is 2013-2023
+             only -> no pre-trends for 2010/2012 cohorts.
+  HOW:       build_vmt_panel.py; vmt_present flag; VMT_NOTES.txt.
+  RESULT:    825 county-years; DVMT is TOTAL travel, a partial proxy for m_i.
+  PAPER:     Mechanisms. Be explicit about the coverage limit and the proxy gap.
+  STATUS:    open (VMT outcome estimation pending, 02_v3)
+
+[2026-06-26] #12  Distance rebuild + panel re-merge for the recode (Steps 1-2)
+  DECISION:  Rebuild distances with Madison wet_from_year=2012 + Sebastian as an
+             all-window source; re-merge onto the analysis panel.
+  WHY:       The wet-SOURCE set moved, so distance-to-nearest-wet changes even
+             though pop-centroids (geography x population) do NOT.
+  HOW:       build_border_augment_v2_patched.py (Plotly county GeoJSON) ->
+             merge_step2.py -> arkansas_panel_annual_border_vmt.csv (1200x68).
+  RESULT:    PRE run reproduced AUGMENT_NOTES to the decimal (regression check);
+             POST moved only Madison/Sebastian cells (documented in RUNBOOK Step
+             1). Correction: Logan distance does NOT shrink (already 6.36 mi from
+             wet Franklin); only its neighbor COUNT moves.
+  PAPER:     Data appendix / reproducibility. Cite the PRE==AUGMENT_NOTES check.
+  STATUS:    done
+
+[2026-06-30] #13  Recode integrated into estimation + first post-recode run (Step 3)
+  DECISION:  Integrate PLACE-2 recode into 02_csdid; run the full battery on the
+             RUCC+origin panel.
+  WHY:       The merged CSV carries OLD treatment coding by design; the .do owns
+             treatment coding at run time so both "places" agree.
+  HOW:       02_csdid imports arkansas_panel_annual_border_vmt_nonalc_rucc_origin
+             .csv (84 col); recode before gvar; StataNow 19.5 SE, exit 0.
+  RESULT:    Aggregate ATTs NULL everywhere (heterogeneity is the story).
+             Pre-trend (Pre_avg): fatal REJECTS under NYT (p=0.037) but PASSES
+             under within-county always-dry (p=0.807); alcohol passes both. Two
+             corrections: (a) Madison is NOT the cause of the fatal rejection
+             (p=0.037 with/without); (b) the remembered "fatal p~0.84" belongs to
+             the always-dry design, not NYT.
+  PAPER:     Results / pre-trends. This is the pivot that motivates #14.
+  STATUS:    done
+
+[2026-07-01] #14  PROMOTE the within-county always-dry design (Sec 6b) to HEADLINE
+  DECISION:  Make the within-county design (treated + always-DRY controls,
+             gvar(cohort), notyet, method(reg), xvars(log_pop poverty_rate)) the
+             PRIMARY/headline spec. Demote the old not-yet-treated "Primary" to
+             Robustness D; always-wet (A) and pre-COVID (B) stay robustness.
+  WHY:       It is the ONLY spec with clean fatal AND alcohol pre-trends
+             (fatal Pre_avg -0.027 p=0.807; alcohol -0.037 p=0.732; nonalc flat
+             p=0.920). Matches the README control-group framing (within-county
+             control = always-dry). The NYT fatal pre-trend rejects (p=0.037).
+  HOW:       02_csdid_estimation_v2.do: header + Sec 6b banner relabeled HEADLINE;
+             Sec 2 relabeled Robustness D; summary table (Sec 8) leads with the
+             always-dry row; NEW Sec 6d exports event-time coefs + a Stata PNG.
+  RESULT:    Headline ATTs (reg+xvars), all ns: fatal -0.638 (p=0.526), alcohol
+             -0.276 (p=0.697), nonalc -0.362 (p=0.628). Conservative (6c) ==
+             headline (non-binding). Re-run exit 0, QC all pass.
+  PAPER:     Results (headline). Write pre-trend validity FIRST (it selects the
+             spec), then the null pooled ATT, then pivot to heterogeneity (#15).
+  STATUS:    done
+
+[2026-07-01] #15  Step 4 heterogeneity run (04b) -- both control sets + RUCC re-test
+  DECISION:  Run 04b rural/urban split. Report BOTH control sets: alwaysdry
+             (headline est_sample pool) and fullpool (as-written notyet + all
+             never-treated). Capture the INTERPRETABLE Pre_avg/p, not just ATT.
+  WHY:       04b shipped un-runnable (RUCC CSV carries old coding -> guard
+             exit 459) and its pre-trend column was silently blank (estat
+             pretrend stores p in r(pchi2), not r(p)); the joint test rejects on
+             cell noise anyway, so Pre_avg is the diagnostic that matters. Both
+             control sets requested to see headline vs as-written side by side.
+  HOW:       04b_heterogeneity_rucc.do: `do patch_madison_sebastian.do` after
+             import; defensive destring; controls dimension in the postfile/loop;
+             _grab_het now returns preavg/preavg_p (estat event) + prejoint_p
+             (r(pchi2)). -> het_rucc_results.csv (24 rows).
+  RESULT:    HEADLINE (RUCC2013, alwaysdry), all ATTs ns:
+               fatal   rural -0.81 (p=.30) / urban -0.65 (p=.74)   pre PASS
+               alcohol rural -0.41 (p=.58) / urban +0.34 (p=.79)   urban pre REJECTS (p=.005)
+               nonalc  rural -0.40 (p=.57) / urban -0.99 (p=.52)   pre PASS
+             KEY: under RUCC the alcohol rural-positive/urban-negative reversal
+             does NOT survive in the point estimates (rural -0.41, urban +0.34).
+             The ATTs moved exactly as #9 predicted; urban-alcohol pre-trend fails.
+  PAPER:     Heterogeneity. The central "reversal" claim must be RE-STATED under
+             RUCC -- it weakens. Decide honestly: report as attenuated / not
+             robust to the defensible classifier, and lean on the dist-median
+             split (#open) + driver-origin (#10) for the attractor evidence.
+  STATUS:    done (but see OPEN ITEMS: 04 dist-split, 03 spillover, dose-response)
+
+[2026-07-01] #16  Repoint publication figures to the headline spec
+  DECISION:  Build the paper event-study figures from the headline (always-dry)
+             design, not the demoted NYT primary.
+  HOW:       Sec 6d exports output/event_study_{fatal,alcohol}_headline.csv
+             (event-time term,coef,se,p) + output/headline_event_*.png (Stata).
+             event_study_plots.py (now in ACTUAL/, repointed to the headline CSVs)
+             -> output/es_{fatal,alcohol}_headline_publication.png + es_panel_*.
+             RUN with /usr/local/bin/python3 (has matplotlib 3.5.1; the default
+             python3 does NOT).
+  RESULT:    3 publication PNGs; panel QC'd (onset line at 0, flat pre-period,
+             short-run negative fatal at t+1/t+2).
+  PAPER:     Figure 1 (headline event study). primary_event_*.png = robustness.
+  STATUS:    done
+
+
+[2026-06] #17  Identification framing = cross-border shopping / tax-avoidance (NOT border-RD)
+  DECISION:  Frame the design as CROSS-BORDER SHOPPING / tax-avoidance, with
+             distance-to-nearest-wet as a treatment INTENSITY (a treatment window in
+             distance) -- NOT as a classic border / spatial regression discontinuity.
+             Relabel the old "border-discontinuity robustness" accordingly.
+  WHY:       A classic border-RD assumes people do NOT travel across the line; this
+             paper's entire mechanism IS that they travel, so RD invites the wrong
+             identifying assumption. The gas-tax / cross-border-shopping literature is
+             the right lineage (residents far from access are untreated; proximity is
+             dose). From the 2026-04-22 / 04-30 workshops (Speaker 2, emphatic; ties
+             to Speaker 9's distance-as-intensity).
+  HOW:       Empirical-strategy framing; feeds the distance median-split (#4/#15) and
+             the sub-county distance layer (#18).
+  PAPER:     Empirical Strategy / Identification -- write the mechanism as travel,
+             cite the gas-tax-border lit, present distance as intensity.
+  STATUS:    open (write-up); framing decided.
+
+[2026-06-26] #18  Sub-county distance refinement (build_subcounty_distance.py)
+  DECISION:  Add a ROBUSTNESS distance layer measuring pre-treatment border distance
+             to the nearest wet RETAIL POLYGON (city/township/ward), not the nearest
+             wet COUNTY edge -- 42 AR counties hold both wet and dry sub-areas the
+             county binary collapses. Emit dist_border_subcty_instate (+ _aug) beside
+             dist_border_aug and run the median split BOTH ways.
+  WHY:       "Wet county" is not uniformly wet; the resident's real distance is to
+             where off-premise access actually sits. Sharper input to the median split
+             and the attractor catchment; a clean robustness win if rural/urban
+             membership and the attractor sign hold across both metrics.
+  HOW:       Reads ABC shapefile layer 60 directly (does NOT touch
+             build_border_augment_v2.py / pop_centroids / OOS ring). Sources = wet
+             polygons AFTER dropping Act 655 state parks (see R14); reconciles to 31
+             always-wet + Logan(05083) + Sebastian(05131). Beer/wine-only sources kept
+             by default; LIQUOR_ONLY toggle for a packaged-liquor cut. Static 2025
+             snapshot -> time-awareness at the COUNTY level only.
+  RESULT:    dist_subcounty_by_treated.csv, wet_area_share_by_county.csv,
+             offpremise_source_manifest.csv. See SUBCOUNTY_DISTANCE_NOTES.txt.
+  CAVEAT:    IN-STATE only -> for the 4 OOS-contamination counties (Little River,
+             Polk, Sevier, Sharp) row-wise MIN with the existing OOS distance BEFORE
+             any median split. Broadcast to all years (time-invariant).
+  PAPER:     Data appendix / robustness on the distance metric.
+  STATUS:    open (merge + split pending; slots Step-1-adjacent in the runbook).
+
+[2026-07-01] #19  ARDOT ADT_Linear corridor data -- GO decision (inspection gate cleared)
+  DECISION:  Proceed to build a corridor-level AADT layer as a FOURTH attractor probe
+             (segment inbound-flow / H2), after the runbook core and driver origin
+             land. NOT a replacement for county DVMT.
+  WHY:       County DVMT (#11) can't localize traffic; segment AADT can isolate the
+             dry-neighbor -> newly-wet HIGHWAY corridor and test whether inbound
+             throughput jumps at transition. Crash-based inflow (#10) + traffic-based
+             inflow moving together on the same corridors = a tight attractor chain.
+  GATE:      inspect_adt_service.py (adt_service_inspection.txt): year_* columns run
+             1986-2050 and 2008 IS populated (sample seg year_2008=330 ... year_2025),
+             12,963 segments -> covers the 2010/2012 cohorts (NO 2013 coverage wall,
+             unlike county DVMT). Gate = PASS.
+  BUILD TASKS (before use): (a) County is a NUMERIC ARDOT code, not FIPS/name (sample
+             County=45, County_Station=450048 = CC+SSSS) -> need an ARDOT county# ->
+             FIPS crosswalk (the probe's 0 name-matches were this, not missing data);
+             (b) rotating-cycle sparsity in some station-years -> a fill rule
+             (carry-forward / ARDOT interpolation); (c) paginate (maxRecordCount 2000).
+  LIMITS:    State Highway System only (misses rural local roads where many fatals
+             occur); AADT is TOTAL throughput (no origin/destination, no impairment);
+             segment identity is a current snapshot. TruckPercent_YYYY exists and may
+             flag through-traffic, but is sparse.
+  PAPER:     Mechanisms / attractor (H2). Pairs with driver-origin (#10) and VMT (#11).
+  STATUS:    open (build pending); GO decision made 2026-07-01.
+
+*** NUMBERING NOTE (2026-07-01): the claude.ai session and the local Claude Code
+    session both appended entries numbered #17-#19 in parallel; the file was
+    reconciled keeping claude.ai's #17-#19 (framing / sub-county distance / ADT)
+    and renumbering the local session's entries to #20-#24 (04 splits, 05 draft,
+    05 corrected, 03 quarantine, 03 fix+re-run) and its countywide_wet reversal
+    to R15. Older cross-references to "local #17/#18/#19/#20/R14" mean #20-#24/R15. ***
+
+[2026-07-01] #20  Distance/contamination/dose splits + jackknife (04)
+  DECISION:  Four attractor-catchment cuts under the headline within-county
+             always-dry spec (gvar(cohort), notyet, method(reg), xvars log_pop
+             poverty_rate): (5a) median split on STATIC pre-treatment
+             dist_border_aug (primary; median 10.479 mi = Randolph) + popcen_aug
+             robustness (median 24.459); (5b) contamination split on pre-treatment
+             nearest_wet_is_oos; (5c) dose rural_nonadj (6) / rural_adj (3) /
+             urban (4); (5d) jackknife-by-cohort. Each arm = {treated subset} +
+             ALL 29 always-dry controls (never `keep`); split attributes merged
+             m:1 from pretreatment_distance_by_treated_v2.csv, NOT the
+             year-varying panel column.
+  WHY:       attractor predicts far > near, in-state cleaner than OOS, and
+             rural_nonadj > rural_adj > urban; jackknife shows no single cohort
+             drives the headline.
+  HOW:       04_heterogeneity_robustness.do (built from HANDOFF_distance_split.txt
+             skeleton; _armfit mirrors 04b _grab_het; Pre_avg from estat event
+             judged, joint estat pretrend r(pchi2) reported only). RAN 2026-07-01
+             StataNow 19.5 SE, exit 0; all 41 arms converged (no missing cells).
+  RESULT:    het_distance_results.csv (41 rows). NO attractor gradient.
+             5a border: fatal far -0.83 (p=.17) vs near -1.05 (p=.56); alcohol
+             far -1.09 (p=.16) vs near +0.98 (p=.26) -- points the WRONG way;
+             popcen: membership moves and both alcohol arms' Pre_avg REJECT.
+             5b contam: oos alcohol +0.86 (p=.002***) but Pre_avg REJECTS
+             (p=.003) -- 4-county cell, uninterpretable; instate all null.
+             5c dose: NOT monotone. rural_nonadj fatal -1.19 (p=.061*, pre PASS)
+             -- the one clean near-significant cell, and it is NEGATIVE;
+             rural_adj alcohol +1.02 (p~1.5e-06***) but Pre_avg REJECTS (p=.002,
+             3-county cell); urban null (alcohol/nonalc pre REJECT).
+             5d jackknife: alcohol stable null (-0.89..+0.40, all ns); fatal
+             ranges -0.03 (drop2014) to -2.02** (p=.015, drop2012) -- the 2012
+             cohort (Benton/Madison/Sharp) pulls the pooled fatal ATT toward
+             zero; no drop manufactures a positive effect.
+  PAPER:     Heterogeneity. Report as convergent NON-confirmation: the cuts are
+             correlated proxies and none recovers the positive catchment
+             gradient; corroborates #15's attenuation. The significant cells sit
+             on failed pre-trends in tiny (3-4 county) cells -- say so rather
+             than over-reading them. Flag drop2012 fatal sensitivity.
+  STATUS:    done
+
+[2026-07-01] #21  Driver-origin attractor test (05) -- PROVISIONAL draft run
+  DECISION:  Ran the 2026-06-30 DRAFT 05_driver_origin.do (ppmlhdfe count
+             Poisson FE, counts reconstructed from shares x denominators)
+             before the updated file arrived from the claude.ai session.
+  HOW:       ppmlhdfe (SSC, installed 2026-07-01 with jwdid), absorb(_fipsn
+             year), exposure offset, vce(cluster _fipsn); treat_post + tp_rural.
+  RESULT:    PRIMARY nonresident inflow: null (urban RR 0.97 p=.55; rural RR
+             0.98 p=.87; differential p=.92). SHARPEST nonresident DRINKING
+             inflow: urban RR 1.42 (p=.021), rural RR 0.81 (p=.32), rural-urban
+             differential p=.009 -- significant but OPPOSITE-SIGNED to the
+             attractor prediction. BORDER OOS inflow: urban RR 0.77 (p=.027),
+             rural RR 1.30 (p=.13). origin_descriptive_cells.csv exported.
+  STATUS:    superseded by #22 (updated 05 transferred + run same day).
+
+[2026-07-01] #22  Driver-origin attractor test (05, corrected design) -- NOT SUPPORTIVE
+  DECISION:  Ran the UPDATED 05_driver_origin.do (transferred from the claude.ai
+             session; supersedes the #21 draft run): exact counts from
+             driver_origin_long.csv; LEVEL (exposure=total_pop, primary) +
+             COMPOSITION (exposure=n_resknown, selection caveat) Poisson FE
+             arms; pool/rural/urban x {n_nonres, n_nonres_drink, n_nonres_dry};
+             stacked-by-cohort event studies (rural arm); jwdid + raw-share
+             csdid robustness. TWO PATCHES before the clean run (targeted fixes,
+             design untouched): (a) arm conditions fully parenthesized -- Stata
+             `&` binds tighter than `|`, so "...| always_dry==1 & expo>0" left
+             the treated subset unguarded and zero-exposure county-years killed
+             the rural/urban COMP arms with "exposure() must be greater than
+             zero"; (b) postfile outcome widened str16->str28 (the two
+             share_csdid rows truncated to identical labels). Installed hdfe
+             (jwdid dependency).
+  WHY:       #10 direct attractor test; R12/R13 corrected design. Attractor
+             signature sought = positive LEVEL AND COMP in the RURAL arm with
+             flat pre-paths, flat/negative urban.
+  HOW:       05_driver_origin.do, StataNow 19.5 SE, exit 0; 18/18 static arms +
+             both stacked event studies converged. Log: 05_driver_origin.log.
+             Outputs: driver_origin_results.csv (20 rows),
+             driver_origin_descriptives.csv, origin_event_{level,comp}_rural.csv.
+  RESULT:    QC: DR_ZIP residence-known coverage ~99% in all rural x post cells,
+             moves <1pp with treatment -- no coverage confound.
+             RURAL (the attractor cells): ALL NULL. n_nonres level +16.0%
+             (p=.44), comp -2.3% (p=.82); n_nonres_drink level +38.2% (p=.33),
+             comp -23.0% (p=.18, NEGATIVE); n_nonres_dry (sharpest: inbound from
+             still-dry homes) level -0.7% (p=.97), comp -9.0% (p=.60).
+             URBAN: n_nonres level -14.9% (p=.069*); n_nonres_drink level
+             +57.3% (p=.019**), comp +39.5% (p=.032**) -- the drinking-inflow
+             rise is URBAN, opposite the prediction (consistent with #21).
+             EVENT PATHS (stacked, rural): COMP pre flat, post null; LEVEL
+             pre-path NOT flat (Tm5 -0.47 p=.007, Tm4 -0.60 p=.022), post
+             null/mixed -- even the rural level read carries a pre-trend caveat.
+             jwdid: "convergence not achieved" both outcomes (fully-interacted
+             ETWFE Poisson overparameterized on tiny counts; capture-wrapped,
+             left for the claude.ai session -- no TWFE swap). Raw-share csdid
+             (floored robustness): rural sh_nonresident -0.078 (p=.42), _drink
+             -0.146 (p=.34) -- null, as R13 expected.
+  PAPER:     Mechanisms. The direct origin test does NOT support the rural
+             attractor: no rural inflow rise on any margin, and the one robust
+             signal (urban drinking inflow +) points the other way. Combined
+             with #20 (no distance/dose gradient) and #15 (RUCC attenuation),
+             the attractor-as-rural-mechanism framing needs rethinking.
+  STATUS:    done (jwdid arm open -- claude.ai session to adjust or drop).
+
+[2026-07-01] #23  Spillover v4 first run (03) -- RAN BUT COHORTS INVALID (see R15)
+  DECISION:  Ran 03_spillovers_v4.do (Excel workbook retired; spillover cohorts
+             from first increment of the panel's n_wet_neighbors; always_dry==1
+             pool from the patch; reg/dripw/nocov battery + RUCC strata + Path B
+             TWFE). Exit 0; hard QC passed (no decreases; 29 always-dry).
+  WHY:       v4's premise was that the panel neighbor counts are post-recode
+             "PLACE-1 output". VERIFICATION FAILED: they are not.
+  HOW:       csdid_v4_spillover.log (first run of the day).
+  RESULT:    Cohort distribution 19 treated / 10 never LOOKED right vs v3's
+             ~20/9-11, but the composition was wrong two ways: (a) plain
+             n_wet_neighbors is the ORIGINAL pre-recode build -- Madison still
+             always-wet in it, so Madison's dry neighbors (Crawford, Johnson,
+             Newton) showed NO 2012 event and sat in the never-treated control
+             pool; (b) countywide_wet is miscoded wet-all-window for Boone and
+             Clark (g2010, R9 confirms 2010), so NO 2010 spillover events
+             existed in ANY neighbor column (incl. the PLACE-1 _chk/_aug
+             rebuilds, which read countywide_wet). Path B share regressors
+             carried the same defect. First-run outputs were quarantined.
+             Scope check: dist_* columns are clean (no county's
+             nearest_wet_fips_aug is Boone/Clark in 2008-11) and 02/04/05 key
+             off cohort/first_treated_year -- direct ATTs, the #20 splits and
+             the #22 origin test are UNAFFECTED.
+  STATUS:    superseded by #24 (neighbor counts rebuilt, 03 re-run same day).
+
+[2026-07-01] #24  R15 fix: neighbor-count rebuild + 03 v4.1 re-run (VALID cohorts)
+  DECISION:  Fix R15 locally and re-run 03. rebuild_neighbor_counts.py builds
+             county adjacency from the public Plotly geojson-counties-fips.json
+             (counties.geojson -- the SAME source PLACE-1 used, runbook Step 1)
+             and recomputes in-state neighbor counts/shares under the CORRECTED
+             PLACE-2 wet timeline (treated wet from cohort year incl. Boone/
+             Clark 2010 + Madison 2012; Sebastian/Logan/Woodruff wet all-window;
+             never-treated constant). Emits neighbor_counts_corrected.csv
+             (fips x year: n_wet_corr, share_wet_corr, n_aug_corr = corrected
+             in-state + panel n_oos_wet_neighbors, share_aug_corr). The
+             canonical CSV is NOT modified -- 03 merges the corrected file at
+             run time, mirroring how the patch owns treatment coding.
+  WHY:       03 was blocked on R15; all inputs for a local fix existed once the
+             public geojson was fetched. Validation gates make the rebuild
+             trustworthy without the claude.ai sandbox.
+  HOW:       rebuild_neighbor_counts.py, three gates ALL PASS: (1) STAGE A --
+             under the PLACE-1 timeline the rebuilt counts reproduce
+             n_wet_neighbors_instate_chk on 1200/1200 cells (adjacency proven
+             identical); (2) corrected-vs-_chk diff decomposes EXACTLY as
+             {Boone/Clark neighbors pre-2010} + {Logan neighbors, constant
+             level, PLACE-2 codes Logan wet}; (3) monotone non-decreasing, 2010
+             increments present. 03_spillovers_v4.do v4.1: merges the corrected
+             file; cohorts from n_wet_corr; Path B regressors from
+             share_wet_corr / share_aug_corr. RAN 2026-07-01, exit 0.
+  RESULT:    COHORTS (the #23 verify step now PASSES): 22 spillover-treated /
+             7 never among the 29 always-dry. 2010 = Newton, Searcy, Pike,
+             Nevada, Montgomery (Boone/Clark neighbors -- all missing or
+             misdated in #23); 2012 = Fulton, Independence, Izard, Lawrence +
+             Crawford, Johnson (Madison's dry neighbors now present); never =
+             Ashley, Bradley, Craighead, Lincoln, Lonoke, White, Yell. NB the
+             v3 anchor "~20/9-11" reflected the defective build -- the corrected
+             pool is thinner on the control side (7 never); csdid notyet
+             mitigates.
+             PATH A (spillover_v4_results.csv): pooled Primary+ REG all NULL
+             with pre PASS -- fatal -0.30 (p=.67), alcohol -0.29 (p=.55),
+             nonalc -0.01 (p=.98); dripw/nocov null. RUCC strata: RURAL alcohol
+             -1.20 (p=.029**) -- numerically reproduces v3's -1.19 -- BUT
+             Pre_avg REJECTS (p=.022), so the symmetry cell no longer stands on
+             clean pre-trends (and its direct-side partner +1.38 already fell
+             to -0.41 under RUCC, #15). Rural fatal -0.47 ns (pre PASS); rural
+             nonalc +0.73 ns (pre REJECT p=.0004). URBAN dry neighbors show
+             POSITIVE spillovers: fatal +4.88 (p=.014**, pre PASS), nonalc
+             +3.44 (p=.10), alcohol +1.44 ns -- 7-county arm (n=112), read
+             cautiously.
+             PATH B (spillover_v4_pathb.csv): pooled alcohol share_wet_corr
+             +1.74 (p=.020**) and L_share_wet_aug +2.44 (p=.024**) -- POSITIVE,
+             i.e. more wet-neighbor exposure -> MORE alcohol crashes in dry
+             counties, opposite the shedding prediction; urban strata strongly
+             positive (fatal +18.1***, alcohol +10.7***, nonalc +7.5**); rural
+             nonalc -3.27 (p=.013**), rural fatal -2.51 (p=.13).
+  PAPER:     Spillovers. The attractor's redistribution signature (rural dry
+             neighbors shed crashes, mirroring rural direct gains) is NOT
+             cleanly recovered: the celebrated symmetry pair is now dead on
+             both sides (direct side attenuated under RUCC; spillover side
+             reproduces in magnitude but fails pre-trends). The recurring
+             URBAN-positive pattern (here, #22's urban drinking inflow, #20's
+             near-wet cells) is a cross-analysis theme worth theorizing before
+             the write-up.
+  STATUS:    done (03 unblocked; quarantine lifted -- spillover_v4_* now valid).
+
+[2026-07-01] #25  R15 PORT: correct-at-rest wet timeline -> canonical panel v2
+  DECISION:  Port the R15 countywide_wet fix INTO the canonical panel rebuild
+             so the wet-source timeline and every neighbor-count column are
+             correct AT REST, and version the canonical panel to
+             arkansas_panel_annual_border_vmt_nonalc_rucc_v2.csv (+ an
+             _origin_v2 twin, since 02/03 import the origin file). Four design
+             decisions, each confirmed with Will before/during coding:
+               D1  Logan (05083) stays EXCLUDED from the DISTANCE-source set
+                   (its wetness is sub-county Booneville, beer & native wine;
+                   SUBCOUNTY_DISTANCE_NOTES.txt). Decided empirically: adding
+                   Logan is NOT a no-op -- 332 dist/nearest cells move (e.g.
+                   Franklin dist_border 10.352 -> 4.813 mi, nearest flips to
+                   Logan). Parameterized (--logan-distance-source, default 0);
+                   Logan IS a neighbor-count source either way (matches #24).
+               D2  FULL Section-2 timeline written into countywide_wet at rest
+                   (Boone/Clark flip 2010, Madison 2012, Sebastian/Logan/
+                   Woodruff wet all-window). cohort / first_treated_year /
+                   treated_unit remain PLACE-2-owned (patch_madison_sebastian
+                   .do, unchanged and verified idempotent on the v2 coding).
+                   The old "CSV carries the old coding by design" convention
+                   is RETIRED for countywide_wet -- scripts reading it as a
+                   timeline is exactly how R15 happened.
+               D3  The plain n_wet_neighbors / share_wet_neighbors /
+                   any_wet_neighbor are corrected IN PLACE under the same
+                   names (no consumer should ever prefer the defective
+                   series); they now equal the _chk family by construction.
+               D4  G5 SURPRISE (briefing premise falsified): the archived
+                   dist_* columns were THEMSELVES R15-contaminated in exactly
+                   44 cells -- 5 counties x 2008-09 (Carroll & Newton via
+                   Boone; Garland, Nevada & Pike via Clark), where a not-yet-
+                   wet Boone/Clark sat in the candidate set and understated
+                   distances (e.g. Pike dist_border_aug 9.72 -> 19.18 mi).
+                   Corrected with sign-off; increases only; no
+                   nearest_wet_is_oos change (04's contamination split
+                   untouched); pretreatment_distance_by_treated_v2.csv
+                   byte-identical (04's median-split inputs untouched).
+  WHY:       R15 existed because scripts read countywide_wet as a timeline
+             while the CSV carried known-wrong values at rest. The #24 fix
+             (rebuild_neighbor_counts.py merged at run time) certified the
+             VALUES but left the trap armed for the next consumer. Moving the
+             single authoritative timeline into the rebuild -- and into the
+             file -- removes the failure mode instead of documenting it.
+  HOW:       wet_source_timeline.py = the ONE timeline (Section-2 rules;
+             always-wet set derived programmatically, 30 + partial trio +
+             13 treated = 33 sources pre-2010; hard asserts; vintage-agnostic
+             so it is idempotent on old- and v2-coded panels). Consumed by:
+             (a) build_border_augment_v2_patched.py "PLACE 1 PATCH v2" --
+             dual timelines (wet_nbr for neighbor counts incl. Logan;
+             wet_dist for distances excl. Logan per D1) + T1 hard asserts;
+             (b) merge_step2.py --r15-correct (default ON) -- rewrites
+             countywide_wet + plain neighbor columns at merge time, with a
+             guard that refuses pre-port augments (no 2010/2012 increment
+             signature); (c) build_panel_v2_r15port.py -- SURGICAL column
+             replacement on the archived CSVs (no pandas round-trip; every
+             untouched cell byte-identical by construction) -> the two v2
+             panels; (d) gate_r15_port.py -- gates G1-G7 (below) ->
+             R15_PORT_GATELOG.txt; (e) 03_spillovers_v4.do v4.2 -- prefers
+             the v2 panel, ASSERTS its columns == neighbor_counts_corrected
+             .csv on 1200/1200 cells, keeps the runtime merge as fallback for
+             the archived panel (design untouched; v4.1 results final).
+  RESULT:    ALL 21 GATES PASS (R15_PORT_GATELOG.txt): G1 stage-A logic
+             identity (adjacency x PLACE-1 timeline reproduces the archived
+             _chk 1200/1200); G2 corrected-vs-_chk diff == {Boone/Clark nbrs
+             pre-2010} + {Logan nbrs constant} EXACTLY, corrected-vs-plain
+             additionally == {Madison nbrs pre-2012} + {Sebastian nbrs
+             constant}; G3 monotone + 2010/2012 increments present; G4 v2
+             neighbor columns == neighbor_counts_corrected.csv on all cells
+             (both files), n_oos unchanged; G5 (restated per D4) dist columns
+             byte-identical EXCEPT exactly the 44 decontamination cells,
+             pretreatment + OOS side-files byte-identical to certified; G6
+             every non-replaced column byte-identical (1200 x 77 / 1200 x 84);
+             G7 Section-2 timeline asserts on both v2 panels. Pipeline re-run
+             validated end-to-end: patched Steps 1-2 reproduce the v2
+             corrections with 0 stray diffs vs the archived 68-col panel.
+             03 v4.2 smoke test (STEP 1-2): assert passes 1200/1200 and the
+             spillover cohort distribution reproduces #24 exactly (22 treated
+             / 7 never; 2010 = 5 counties). No estimation re-run needed: 02/
+             04/04b/05 key off cohort (PLACE-2, unchanged); 03 v4.1 already
+             used these exact neighbor values via the runtime merge.
+             FILES: arkansas_panel_annual_border_vmt_nonalc_rucc_v2.csv,
+             ..._rucc_origin_v2.csv (new canonical pair; archives untouched),
+             out_r15port/ (regenerated PLACE-1 side-files), R15_PORT_GATELOG
+             .txt. Runtime neighbor merges are DEPRECATED for the v2 panels;
+             neighbor_counts_corrected.csv retained as the certified
+             verification artifact (03 still cross-checks against it).
+  PAPER:     Data section (panel construction): one sentence that the wet-
+             source timeline is encoded once and validated by identity gates;
+             the D4 correction belongs in a data-quality footnote if the
+             distance split is reported for spillover counties.
+  STATUS:    done
+
+
+================================================================================
+PART R  --  REVERSALS, DEAD-ENDS & CORRECTIONS (backfilled 2026-07-01)
+================================================================================
+
+WHAT THIS IS
+  Wrong turns that were caught and corrected -- the "did you consider X?" defense
+  file. Each notes what was ABANDONED, why it FAILED, how it was CAUGHT, and where
+  the corrected decision now lives. Model-side reversals (additive miles, per-unit
+  trip cost) are logged in PART T (T1->T2, T3->T4). Dates approximate where the
+  source transcript was undated. Append newest at the bottom.
+
+R1  [2026-03..04]  Always-wet as the baseline never-treated group
+  ABANDONED: first framing made always-wet neighbors (Option C) the PRIMARY
+             never-treated comparison.
+  FAILED:    always-wet counties fail the pre-trend test (p~0.000) -- they have
+             different crash trajectories from transitioning counties.
+  CAUGHT BY: estat pretrend on the first estimation run.
+  NOW:       not-yet-treated promoted to primary, always-wet demoted to Robustness A;
+             later within-county always-DRY promoted to headline. See #3, #14.
+
+R2  [2026-04]  Spillover cohort built from any_wet_neighbor (v2/v3)
+  ABANDONED: defining spillover onset as the first year any_wet_neighbor == 1.
+  FAILED:    28/31 dry counties coded cohort-2008 (they already bordered
+             PRE-EXISTING always-wet counties); csdid dropped them as always-treated
+             and the effective sample collapsed to ~3 single-county cohorts with
+             numerical singularities (SEs ~1e-16).
+  CAUGHT BY: cohort tabulation + the "units always treated found" csdid message.
+  NOW:       cohort = first year a NEWLY-TRANSITIONING neighbor goes wet, from an
+             adjacency x cohort join -> genuine 20-treated / 9-11-never-treated split
+             (the first design with clean never-treated controls). See spillover work.
+
+R3  [2026-04]  csdid_plot for event-study aggregation
+  ABANDONED: using csdid_plot to draw the aggregated event study.
+  FAILED:    csdid_plot only does per-cohort group-time plots, not event-time
+             aggregation.
+  NOW:       build event-study plots from estat event coefficients via twoway /
+             matplotlib. Standing note in PART C.
+
+R4  [2026-04]  Nested preserve/restore in the spillover .do
+  ABANDONED: an outer preserve for the subsample + an inner preserve for CSV export.
+  FAILED:    Stata r(621) -- preserve nests only one deep; the rural/urban calls
+             crashed.
+  NOW:       single preserve at the top / tempfile for the export.
+
+R5  [2026-06]  Bowie County TX coded always-wet (border augmentation)
+  ABANDONED: treating Bowie/Texarkana TX as a constant wet off-premise source for
+             Little River.
+  FAILED:    OPPOSITE of the truth -- Bowie was DRY for off-premise until 2013
+             (beer/wine only thereafter, liquor later), and AR historically supplied
+             TX, not the reverse. The "Little River flips to close via Texas" result
+             was an artifact.
+  CAUGHT BY: primary-source verification of the TX/LA cells.
+  NOW:       Little River's real adjacent access is IN-STATE Miller (Texarkana AR);
+             TX coded wet only from 2013, beer/wine. See #4, #5.
+
+R6  [2026-06]  Geometric-centroid distance metric
+  ABANDONED: centroid-to-centroid distance to the nearest wet county.
+  FAILED:    measured county SHAPE, not access -- inflated border counties (Little
+             River read 33 mi to a wet county whose edge and population it abuts).
+             Median pre-treatment distance 26 mi (centroid) vs ~10 mi (border).
+  NOW:       population-weighted centroid -> nearest wet BORDER (dist_border_aug) as
+             primary; the metric choice DOMINATES the OOS-coding choice. See #4, #12.
+
+R7  [2026-06-19]  Madison (05087) coded always-wet  (full detail in #6)
+  ABANDONED: always-wet.
+  FAILED:    SoS returns show a countywide off-premise wet vote Nov 2012 (57.29%).
+             Red herrings ruled out: NABCA Jan-2017 "dry" = compilation error; the
+             other Nov-2012 "Madison County" vote is in KENTUCKY.
+  NOW:       g2012 treated (the 13th county).
+
+R8  [2026-06-19]  Sebastian (05131) coded dry / omitted as a wet source  (full detail in #7)
+  ABANDONED: dry control.
+  FAILED:    Fort Smith (~75% of pop) has been wet off-premise throughout; omitting
+             it overstated distance for Crawford/Scott/Franklin.
+  KEY DISTINCTION: dropping a unit as an ESTIMATION row is NOT the same as dropping
+             it as a distance SOURCE -- keep Fort Smith as a source regardless.
+  NOW:       wet all-window, partial_wet flag.
+
+R9  [2026-06]  Cohort-year conflicts from secondary sources (Little River / Randolph / Boone)
+  ABANDONED: secondary-source dates.
+  RESOLVED against primary returns: Little River = 2016 (AP, 3,068-2,088), NOT 2018;
+             Randolph = 2018 (2014 & 2016 petitions both failed), NOT 2016; Boone =
+             2010 (AP), NOT 2011 (the 2011 source also dropped Madison -> unreliable).
+             See #1, #6.
+
+R10 [2026-06-29]  Ad hoc 20k population rural/urban cutoff  (see #9, #15)
+  ABANDONED: pop < 20k = urban.
+  FAILED:    indefensible and orthogonal to the mechanism (filed isolated
+             nonmetro-with-a-town counties as urban).
+  NOW:       USDA RUCC; treated split moves 5R/7U -> 9R/3U; this is a genuine
+             re-test of the headline, not a rubber-stamp.
+
+R11 [2026-06-29..07-01]  nonalc fatal crashes framed as a "clean placebo"
+  ABANDONED: treating non-alcohol fatal crashes as a placebo that should read null.
+  FAILED:    the attractor relocates TRAFFIC, so non-alcohol crashes move too -- a
+             positive non-alcohol effect is CONSISTENT with the mechanism, and a
+             referee would weaponize a non-null "placebo."
+  NOW:       mechanism-DECOMPOSITION outcome (alcohol minus nonalc isolates the
+             impairment channel), run through the full spec battery + event study.
+             See #8.
+
+R12 [2026-07-01]  Driver-origin: sh_home_dry as the attractor DiD outcome
+  ABANDONED: using the share of drivers whose HOME county is dry as the attractor test.
+  FAILED:    mechanically confounded -- a treated county's OWN residents flip from
+             home_dry to not-home_dry the instant the county goes wet, so the share
+             COLLAPSES post-treatment (0.72->0.07 urban, 0.76->0.23 rural), the
+             opposite of the intended "watch it rise."
+  CAUGHT BY: reading the builder's home_dry definition at the source.
+  NOW:       use NONRESIDENT inflow (sh_nonresident[_drink]); residency does not flip
+             with treatment, so a post-treatment RISE is the attractor. See #10.
+
+R13 [2026-07-01]  Raw-share csdid for driver-origin
+  ABANDONED: Primary+ REG csdid on the raw origin shares.
+  FAILED:    denominators are tiny in exactly the attractor cells (rural treated
+             median ~8 involved drivers, often 0-2 drinking), the shares are
+             zero-inflated, and missingness correlates with treatment cells ->
+             ill-posed / noisy.
+  NOW:       count-based Poisson/NB FE with an ln(denominator) offset, treated x post
+             x rural; raw-share csdid demoted to a floored robustness check. See #10.
+
+
+R14 [2026-06-26]  Act 655 state parks miscounted as off-premise wet sources
+  ABANDONED: an initial "any Wet polygon = off-premise source" filter in the
+             sub-county distance build (#18).
+  FAILED:    68 wet polygons are STATE PARKS (Act 655 / AR Code 3-9-103) -- wet by
+             statute but ON-premise only, no takeaway. Counting them overshot the
+             source set to ~50 counties and turned dry controls into fake access
+             points (Crawford's ONLY wet area is Lake Fort Smith State Park).
+  CAUGHT BY: source-set reconciliation in build_subcounty_distance validation
+             (50 -> 33 after dropping polygons whose notes contain "655"/"3-9-103").
+  NOW:       parks dropped; source set = 31 always-wet + Logan + Sebastian. Referee-
+             facing point: "aren't state parks wet?" -> yes, but on-premise by
+             statute, so the dry controls stay clean on the OFF-premise margin
+             (reinforces #7, #18).
+
+R15 [2026-07-01]  countywide_wet miscoded for Boone/Clark -> v4 spillover cohorts
+  ABANDONED: trusting the panel's countywide_wet / n_wet_neighbors columns as a
+             post-recode wet timeline for spillover cohort construction (03 v4).
+  FAILED:    countywide_wet = 1 for the ENTIRE window for Boone (05009) and
+             Clark (05019) despite cohort = 2010 (2010 confirmed primary, R9).
+             Every neighbor-count column inherits it: no 2010 spillover events
+             anywhere; plain n_wet_neighbors additionally predates the Madison
+             recode (no 2012 events for Crawford/Johnson/Newton). Harmless to
+             the DIRECT designs (csdid keys off cohort; distances unaffected --
+             verified nearest_wet_fips_aug never points at Boone/Clark pre-2010)
+             but fatal to 03 v4's cohorts and Path B shares.
+  CAUGHT BY: the briefing's verify step ("Madison's dry neighbors should show a
+             2012 cohort") failing on the first 03 v4 cohort listing, 2026-07-01.
+  NOW:       FIXED same day (#24): rebuild_neighbor_counts.py (public Plotly
+             geojson, STAGE-A validated vs n_wet_neighbors_instate_chk on
+             1200/1200 cells) -> neighbor_counts_corrected.csv, merged by 03 at
+             run time; 03 v4.1 re-run with valid cohorts. PORTED AT REST (#25,
+             2026-07-01): the v2 canonical panels (..._rucc_v2.csv +
+             ..._rucc_origin_v2.csv) carry the corrected countywide_wet /
+             neighbor / dist columns, gate-certified (R15_PORT_GATELOG.txt);
+             the pre-v2 CSVs are archives -- use the v2 files. NB the same
+             defect also contaminated 44 dist_* cells (5 counties x 2008-09),
+             caught by gate G5 and corrected under #25/D4.
+
+
+================================================================================
+PART B  --  PAPER CROSSWALK (manuscript section -> supporting entries/files)
+================================================================================
+
+  Introduction / contribution
+      Net-ambiguous sign; attractor externality is the spatial contribution.
+      -> README THEORETICAL FRAMEWORK; entries #10, #15.
+
+  Theoretical Framework
+      Hotelling travel-cost + Becker; three channels (consumption +, travel
+      distance -, attractor +); multiplicative impaired miles m=gamma*a*d;
+      county-level crash object Pi_c; corrected comparative static.
+      -> README "THEORETICAL FRAMEWORK". (Model decisions live in the README;
+         log future model edits here.)
+      -> Full derivation history now in PART T (T1-T8); model reversals in PART R.
+
+  Institutional Background / Treatment Definition
+      -> #1 (off-premise margin), #6 (Madison), #7 (Fort Smith/partial_wet).
+
+  Data
+      FARS outcomes + alcohol-flag discontinuity (#8); ACS/CBP/DOW controls;
+      border/distance augmentation (#4, #5, #12); VMT (#11); driver origin (#10);
+      RUCC (#9). -> README DATA + AUGMENT_NOTES_v2.txt + VMT_NOTES.txt.
+
+  Empirical Strategy / Identification
+      C&S-A + method(reg) + notyet (#2); control-group framing (#3); headline =
+      within-county always-dry (#14); conservative control set (#7).
+
+  Results -- headline
+      Pre-trend validity selects the spec (#13, #14); null pooled ATT; Figure 1 =
+      es_panel_headline_publication.png (#16).
+
+  Results -- heterogeneity (the paper's core)
+      RUCC rural/urban split (#15); dist-median + contamination split + dose-
+      response + jackknife-by-cohort (#20 -- convergent NON-confirmation of the
+      catchment gradient; report honestly).
+
+  Mechanisms
+      alcohol vs nonalc decomposition (#8); driver-origin attractor (#10, #22 --
+      corrected design NOT supportive: rural arms all null, drinking inflow
+      rises in URBAN; #21 superseded); VMT (#11); ADT corridors (#19, open).
+
+  Spillovers
+      v4.1 on corrected cohorts (#24, R15): pooled null (pre PASS); rural
+      alcohol -1.20** reproduces v3's -1.19 but Pre_avg REJECTS; urban dry
+      neighbors POSITIVE (fatal +4.88**, pre PASS). The v3 symmetry claim does
+      not survive intact.
+
+  Robustness
+      Robustness A (+always-wet, fails pre-trend), B (pre-COVID), D (NYT);
+      conservative control set (#7); drop-Madison (#6/#13).
+
+  Reproducibility appendix
+      PART C below + README CODE FILES.
+
+
+  EXTERNAL INPUT CROSSWALK  (workshops 2026-04-22 / 04-30 -> decisions)
+      Which analytical choices originated from the two workshop audiences, so the
+      paper can credit them and the reasoning stays traceable.
+        Disjoint outcomes: non-alcohol fatal reported separately  -> #8   (Speaker 6)
+        Rural/urban classifier = USDA RUCC (not 20k)              -> #9   (Speaker 12)
+        Driver-origin / registration attractor test               -> #10  (Max / Speaker 12)
+        Identification = cross-border shopping, not border-RD      -> #17  (Speaker 2)
+        Accident-disutility term (lambda*pi*kappa)                 -> T5   (audience / Udall)
+        Cap event-study window (year-8 spike = composition)        -> open (Speaker 4)
+        Non-fatal crashes + DUIs for power                         -> open (Speaker 4 / Nick)
+        Church DENOMINATION/sect controls, not churches_pc         -> open (Speaker 11)
+        Matched / synthetic-control robustness; 38% petition
+          threshold = selection caveat                            -> open (Speaker 6)
+        Sunday-sales literature + monthly/DOW panel                -> open (Speaker 1)
+
+
+================================================================================
+PART C  --  REPRODUCIBILITY (run order, script -> output, environment)
+================================================================================
+
+RUN ORDER (full rebuild from the recode):
+  1. build_border_augment_v2_patched.py   -> distance_neighbor_augment_v2.csv
+  2. merge_step2.py                        -> arkansas_panel_annual_border_vmt.csv
+     (+ nonalc build, merge_rucc.py, build_driver_origin.py -> ..._rucc_origin.csv)
+  3. 02_csdid_estimation_v2.do  (recode integrated) -> headline + robustness,
+        output/event_study_*_{headline,nyt}.csv, output/*_event_*.png
+  4. 04b_heterogeneity_rucc.do  (calls patch_madison_sebastian.do) -> het_rucc_results.csv
+  4b. 04_heterogeneity_robustness.do (calls the patch; merges pretreatment_distance
+      _by_treated_v2.csv) -> het_distance_results.csv          [added 2026-07-01, #20]
+  4c. 05_driver_origin.do (needs driver_origin_long.csv + the patch) ->
+      driver_origin_results.csv, driver_origin_descriptives.csv,
+      origin_event_{level,comp}_rural.csv                      [run 2026-07-01, #22]
+  4d. rebuild_neighbor_counts.py (needs counties.geojson, public Plotly source)
+      -> neighbor_counts_corrected.csv (R15 fix; STAGE-A validated 1200/1200),
+      then 03_spillovers_v4.do (merges it at run time) ->
+      spillover_v4_results.csv + spillover_v4_pathb.csv        [run 2026-07-01, #24]
+  5. event_study_plots.py       -> output/es_*_headline_publication.png
+  (open: 02_csdid_v3; 05 jwdid arm non-convergent)
+
+WHICH SCRIPT MAKES THE HEADLINE NUMBERS/FIGURES:
+  Headline ATT + pre-trends        02_csdid Sec 6b (within-county always-dry)
+  Headline event-study CSV         02_csdid Sec 6d -> event_study_*_headline.csv
+  Headline event-study PNG (Stata) 02_csdid Sec 6d -> headline_event_*.png
+  Headline publication PNG (py)    event_study_plots.py -> es_*_headline_publication.png
+  Rural/urban ATT table            04b -> het_rucc_results.csv
+
+ENVIRONMENT:
+  Stata:  /Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do FILE.do
+          (StataNow 19.5 SE; csdid + drdid + reghdfe + ftools installed; ppmlhdfe,
+          jwdid, hdfe added 2026-07-01; run from ACTUAL/ so the "." relative CSV
+          imports resolve; run sandbox-disabled for long csdid).
+  Python: /usr/local/bin/python3  (3.10.4, matplotlib 3.5.1 + pandas; shapely
+          2.1.2 added 2026-07-01 for rebuild_neighbor_counts.py).
+          The default `python3` (/usr/bin) lacks matplotlib -- do NOT use it.
+
+OPEN ITEMS (paper-blocking or paper-strengthening):
+  - #5  verify TX/LA OOS coding vs state ABC.
+  - #10 estimate the post-treatment rise in orig_sh_home_dry (attractor direct test).
+  - #11 VMT outcome estimation (02_csdid_v3).
+  - #15 dist_border_aug median split + contamination split + rural_nonadj dose-
+        response + jackknife-by-cohort (04_heterogeneity_robustness.do).
+        [DONE 2026-07-01 -> #20, het_distance_results.csv]
+  - 03_spillovers_v2.do with the corrected control set.
+        [DONE 2026-07-01 as 03_spillovers_v4.do v4.1 -> #24 (after the R15
+         countywide_wet defect was caught (#23) and fixed via
+         rebuild_neighbor_counts.py). Remaining: fix countywide_wet for
+         Boone/Clark in the next PANEL rebuild so the canonical columns stop
+         being a trap. [DONE 2026-07-01 -> #25: v2 panels correct at rest,
+         gates G1-G7 pass; 03 is now v4.2 (assert-and-prefer).]]
+  - Monthly + DOW (Sunday sales); PPML/NB FE for zeros.
+  - Non-fatal crashes + DUIs (ARDOT) for power.
+  - #17 write the cross-border-shopping / tax-avoidance framing; relabel border-RD.
+  - #18 merge dist_border_subcty (+ OOS min) and report the median split both ways.
+  - #19 build ARDOT ADT corridor layer (county# -> FIPS xwalk + fill rule); after #10.
+  - Church DENOMINATION/sect controls (ARDA / Religion Census) over churches_pc.
+  - Matched / synthetic-control robustness ("a county like this that stayed dry");
+    note the 38% petition-threshold selection (treated = organized past a high bar).
+  - Cap the event-study window where >=3-4 cohorts are present (year-8 = composition).
+  - NB #10 attractor outcome is sh_NONRESIDENT, not orig_sh_home_dry (confounded; R12).
+================================================================================

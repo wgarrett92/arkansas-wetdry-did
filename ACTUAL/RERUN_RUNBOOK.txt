@@ -1,0 +1,283 @@
+======================================================================
+RE-RUN RUNBOOK -- Madison g2012 + Sebastian recode
+What to change and run, in order, before re-performing the analysis.
+======================================================================
+Generated: 2026-06-19
+Updated:   2026-06-26  (Steps 0-2 executed; results + corrections folded in)
+Updated:   2026-06-30  (Step 3 patch INTEGRATED into 02_csdid_estimation_v2.do AND
+                        RUN -- StataNow 19.5 SE, exit 0, log 6155 lines, QC all pass.
+                        Key finding: within-county always-dry design (Sec 6b) has
+                        clean pre-trends (fatal Pre_avg p=0.807); NYT treated-only
+                        fatal pre-trend rejects (p=0.037); Madison not the cause.)
+Updated:   2026-07-01  (Step 4 COMPLETE. 04_heterogeneity_robustness.do RAN -- no
+                        attractor gradient (ANALYSIS_LOG #20). 05 driver-origin:
+                        draft ran provisionally (#21), then the UPDATED 05 was
+                        transferred, patched (parenthesization bug in the comp
+                        arms) and RAN clean -- NOT supportive of the rural
+                        attractor; urban drinking inflow rises instead; jwdid arm
+                        non-convergent (#22). 03_spillovers_v4.do first run was
+                        QUARANTINED -- countywide_wet miscoded wet-all-window for
+                        Boone/Clark (g2010) broke every neighbor-count column
+                        (#23 + R15) -- then FIXED same day via
+                        rebuild_neighbor_counts.py -> neighbor_counts_corrected
+                        .csv and RE-RUN with valid cohorts (#24): pooled null;
+                        rural alcohol -1.20** but pre-trend REJECTS; urban dry
+                        neighbors POSITIVE. The v3 symmetry claim does not
+                        survive intact. NB: parallel claude.ai/local sessions
+                        collided on log entry numbers #17-#19; local entries
+                        renumbered #20-#24/R15 -- see the NUMBERING NOTE in
+                        ANALYSIS_LOG PART A.)
+
+STATUS AT A GLANCE
+======================================================================
+  [x] Step 0  back up / fresh-folder outputs
+  [x] Step 1  distance rebuild  (build_border_augment_v2_patched.py)
+  [x] Step 2  panel re-merge    (merge_step2.py -> arkansas_panel_annual_border_vmt.csv)
+  [x] Step 3  re-estimate       (INTEGRATED + RUN 2026-06-30, StataNow 19.5 SE,
+                                 exit 0; recode QC all pass. Pre-trend finding below)
+  [x] Step 4  heterogeneity + spillover  (ALL DONE 2026-07-01: 04b (#15); 04
+                                 median-split, no attractor gradient (#20); 05
+                                 driver-origin, not supportive (#22); 03 spillover
+                                 v4.1 on corrected neighbor counts after the R15
+                                 countywide_wet defect was caught + fixed (#23/#24))
+  [x] Step 5  robustness (conservative-control single row) -- CODED in 02_csdid
+                                 Section 6c (baseline==conservative by construction)
+  [x] Step 6  VMT -- nothing to do
+  [~] Step 7  regenerate figures (headline event study DONE 2026-07-01; descriptive pending)
+PLACE 1 (distance) is DONE; PLACE 2 (treatment coding, Stata) is INTEGRATED into
+02_csdid_estimation_v2.do AND RUN (2026-06-30, exit 0). Both places agree.
+
+R15 PORT UPDATE (2026-07-01, ANALYSIS_LOG #25): Steps 1-2 were RE-RUN under the
+R15 port. The wet-source set now comes from wet_source_timeline.py (Boone/Clark
+correctly dry pre-2010; Logan a neighbor source but NOT a distance source --
+D1), merge_step2.py rewrites countywide_wet + the plain neighbor columns at
+merge time (--r15-correct, default ON), and the NEW CANONICAL panels are
+  arkansas_panel_annual_border_vmt_nonalc_rucc_v2.csv          (77 cols)
+  arkansas_panel_annual_border_vmt_nonalc_rucc_origin_v2.csv   (84 cols)
+certified by gate_r15_port.py (21/21 gates, R15_PORT_GATELOG.txt). The pre-v2
+CSVs named below are ARCHIVES. NB the port also decontaminated 44 dist_* cells
+(5 counties x 2008-09) the old build had understated via the phantom wet
+Boone/Clark (#25 D4); the 13-row pretreatment distance table is byte-identical,
+so Step 4's distance splits are unaffected. No estimation re-run was needed.
+
+THE ONE IDEA TO HOLD ONTO
+======================================================================
+The Madison/Sebastian correction lives in TWO independent places, and
+they must AGREE:
+
+  PLACE 1 -- the DISTANCE build (geography/access):     [DONE 2026-06-26]
+     build_border_augment_v2.py decides which counties are WET SOURCES
+     in each year, to compute distance-to-nearest-wet.
+     -> patch_border_madison_sebastian.py
+        (realized as build_border_augment_v2_patched.py -- see Step 1 note:
+         the script has NO wet_from_year dict, so the patch was adapted)
+
+  PLACE 2 -- the ESTIMATION panel (treatment coding):   [INTEGRATED 2026-06-30]
+     02_csdid_estimation decides which counties are TREATED and when.
+     -> patch_madison_sebastian.do  (now pasted into 02_csdid_estimation_v2.do,
+        lines ~69-210, AFTER the import was swapped to the RUCC+origin panel and
+        BEFORE the gvar construction, so Madison g2012 propagates into gvar_nyt/
+        gvar automatically). RUN 2026-06-30 (StataNow 19.5 SE, exit 0).
+
+Fixing only one place leaves the panel inconsistent (e.g. Madison treated
+in estimation but still a pre-2012 wet source in the distance metric).
+Do both. As of 2026-06-30 BOTH are done in code: PLACE 1 (distance) rebuilt the
+panel; PLACE 2 (treatment coding) is now integrated into 02_csdid_estimation_v2.do.
+The merged CSV still carries the OLD coding by design -- PLACE 2 owns it at run
+time inside the .do. The two places now agree; the Stata RUN is DONE (2026-06-30).
+
+WHAT STAYS UNTOUCHED (important -- saves you work)
+======================================================================
+  - pop_centroids.csv          centroids = geography x population, NOT policy.
+                               Madison/Sebastian do not move. Do NOT recompute.
+                               (Confirmed: PRE run reproduced AUGMENT_NOTES exactly.)
+  - oos_wet_reference_v2.csv    Madison & Sebastian are IN-STATE; OOS ring
+                               unaffected. (Confirmed: byte-identical pre/post.)
+  - vmt_county_year.csv /       VMT unaffected. The 2012 cohort has no
+    build_vmt_panel.py          pre-treatment VMT anyway (same as Benton/Sharp).
+
+STEPS (in order)
+======================================================================
+0. [DONE] BACK UP current outputs so you can diff old vs new:
+     mkdir -p _bak_pre_madison
+     cp distance_neighbor_augment_v2.csv pretreatment_distance_by_treated_v2.csv \
+        arkansas_panel_annual_merged.csv _bak_pre_madison/
+   NOTE: writing the rebuild to a FRESH output folder is equivalent and cleaner
+   (the old files are preserved by construction). Either is fine; keep the old
+   distance/pretreatment files around so Step 1's diff has a baseline.
+
+1. [DONE 2026-06-26; RE-RUN 2026-07-01 under the R15 PORT -- see the R15 PORT
+   UPDATE box above: wet sources now from wet_source_timeline.py, hard asserts
+   in the "PLACE 1 PATCH v2" block, regenerated side-files in ACTUAL/out_r15port/]
+   DISTANCE REBUILD.
+   The patch was adapted, not applied verbatim: build_border_augment_v2.py has
+   NO wet_from_year dict -- it reads wetness from the panel's countywide_wet
+   column. So build_border_augment_v2_patched.py instead (a) recodes countywide_wet
+   directly (Madison 05087 -> 0 pre-2012, 1 from 2012; Sebastian 05131 -> 1 all
+   years) and (b) injects Madison g2012 into the pretreatment-distance emitter so
+   it gets a row. Run with the Plotly county GeoJSON (geojson-counties-fips.json:
+   id=FIPS, properties.NAME), the same source the adjacency was built from:
+     python build_border_augment_v2_patched.py \
+       --panel arkansas_did_panel.csv --geojson counties.geojson \
+       --popcentroids pop_centroids.csv --outdir out_post
+
+   VERIFIED (the recode is clean and the GeoJSON does not perturb anything):
+     - PRE (unmodified) run reproduced AUGMENT_NOTES v2 to the decimal:
+       popcen 26.3/24.7, border 10.8/10.1; Little River 7.47/13.58; Sharp 22.16;
+       adjacency QC 1200/1200. This is the proof the Plotly GeoJSON reproduces the
+       pipeline -- run PRE first whenever you re-run, as a regression check.
+     - POST: pretreatment_distance_by_treated_v2.csv grew 12 -> 13 rows. Madison
+       (05087): pre_year 2011, border_aug 10.63 mi, nearest wet = Washington AR
+       (in-state, adjacent). [matches the original prediction]
+     - Fort Smith (05131) now counted: Crawford 9.07->7.29, Scott 19.94->8.77,
+       Franklin 21.97->10.35; all now point at 05131. [matches]
+     - Carroll & Washington lose Madison as nearest in 2008-2011 ONLY. [matches]
+     - Neighbor-count move (QC 1200 -> 1124, i.e. 76 county-years) decomposes
+       exactly: 20 (Madison's 5 nbrs Benton/Carroll/Johnson/Newton/Washington,
+       2008-11) + 32 (Sebastian-only nbrs Logan/Scott, all yrs) + 24 (Crawford/
+       Franklin, adjacent to BOTH, so net +1 only from 2012). All attributable.
+
+   *** CORRECTION to the original Step-1 CHECK ***
+     LOGAN's distance does NOT shrink. Logan already sits 6.36 mi from wet Franklin
+     (05047, countywide_wet=1) -- closer than Fort Smith -- so adding Sebastian
+     moves only Logan's neighbor COUNT, not its distance. The old "Crawford/Scott/
+     Franklin/LOGAN dist_*_aug shrink" line was wrong on Logan; the result is right.
+     Expected distance shrinks: Crawford, Scott, Franklin (NOT Logan).
+
+2. [DONE 2026-06-26; RE-RUN 2026-07-01 under the R15 PORT -- merge_step2.py now
+   applies the correct-at-rest rewrite (--r15-correct) and the canonical outputs
+   are the _v2 panels; pipeline freeze-validated: 0 stray diffs vs the archived
+   68-col panel outside the corrected columns]
+   RE-MERGE the refreshed augment + VMT onto the analysis panel:
+     python merge_step2.py --panel arkansas_panel_annual_merged.csv \
+       --augment distance_neighbor_augment_v2.csv \
+       --vmt vmt_county_year.csv \
+       --out arkansas_panel_annual_border_vmt.csv
+   merge_step2.py is defensive (fips forced to 5-char string before joining, 1:1
+   validate, collision + coverage reporting, spot checks, NaN audit). VMT is
+   unchanged but re-merged so the combined panel is current.
+   VERIFIED: arkansas_panel_annual_border_vmt.csv = 1200 rows x 68 cols; distance
+   coverage 1200/1200; 0 distance NaN; new vmt_present 0/1 flag = 1 on 825 rows
+   (2013-2023 full, 2008-2012 empty); recode carried through (Crawford->05131,
+   Madison 2011->Washington). PURELY ADDITIVE -- treatment coding untouched (PLACE 2).
+
+3. [DONE 2026-06-30 -- INTEGRATED + RUN] RE-ESTIMATE.
+   patch_madison_sebastian.do (PLACE 2) is integrated into 02_csdid_estimation_v2.do
+   and the file was RUN (StataNow 19.5 SE, batch, exit 0, log 6155 lines). Integration:
+     - Import swapped: arkansas_did_panel.csv (20 col) -> the 84-col
+       arkansas_panel_annual_border_vmt_nonalc_rucc_origin.csv (the base panel
+       lacked total_pop/poverty_rate/rural_2013 that the patch + headline need).
+     - Defensive destring of the headline/covariate + *_pc columns.
+     - The recode pasted BEFORE the gvar construction, so Madison g2012
+       (cohort=2012, treated_unit=1) propagates into gvar_nyt AND gvar; Sebastian/
+       Logan/Woodruff -> wet + partial_wet; clean always_wet/always_dry + log_pop +
+       est_sample rebuilt. QC asserts retained.
+     - Section 1b "CHECK FIRST": Primary+ REG (method(reg), notyet, xvars(log_pop
+       poverty_rate)) pre-trends for fatal/alcohol/nonalc, run first -- THIS is the
+       log to upload.
+     - Section 6 Robustness C upgraded: xvars(log_pop poverty_rate) added to fatal +
+       alcohol, restore-before-each-estat discipline fixed, nonalc battery added.
+     - Section 6b: within-county design = treated + always-DRY controls
+       (gvar(cohort), notyet, Primary+ REG), fatal/alcohol/nonalc.
+     - Section 6c: conservative-control single row (Step 5) -- est_sample &
+       partial_wet==0 (non-binding by construction; baseline==conservative).
+   RESULTS (2026-06-30). Recode QC ALL PASS (13 treated / g2012=3 / 62 never / 33
+   always-wet / 29 always-dry / 3 partial_wet). Aggregate ATTs NULL everywhere (as
+   expected -- heterogeneity is the story). PRE-TREND (Pre_avg, the interpretable
+   diagnostic; joint estat pretrend chi2 rejects on cell noise everywhere, ignore it):
+       Outcome   NYT treated-only        Within-county + always-dry (Sec 6b)
+       Fatal     0.317  p=0.037 REJECT   -0.027  p=0.807  PASS
+       Alcohol   0.257  p=0.293 pass     -0.037  p=0.732  PASS
+       Nonalc    0.027  p=0.791 flat      0.010  p=0.920  flat
+   TWO FINDINGS:
+     (a) Madison is NOT the cause of the fatal pre-trend rejection -- same panel/spec
+         WITH vs WITHOUT Madison gives fatal Pre_avg p=0.037 both ways (0.317/0.321).
+     (b) The remembered "fatal p~0.84 (best pre-trend balance)" reproduces for the
+         WITHIN-COUNTY always-DRY design (Sec 6b, fatal p=0.807), NOT the not-yet-
+         treated Primary (fatal p=0.037). The clean-pre-trend headline belongs to
+         gvar(cohort)+always-dry (matches "within-county control = always-dry").
+         RECOMMEND promoting Sec 6b to the headline spec.
+         [DONE 2026-07-01] Sec 6b promoted to headline in 02_csdid_estimation_v2.do:
+         header + banners relabeled (6b = HEADLINE/PRIMARY; old NYT Primary -> Robust D),
+         summary table leads with the always-dry row, and a new Sec 6d exports the
+         headline event study -> output/event_study_{fatal,alcohol}_headline.csv
+         (raw group-time coefs, same format as the _nyt files). Re-run confirms
+         fatal ATT -0.638 / Pre_avg p=0.807; alcohol -0.276 / p=0.732; nonalc p=0.920.
+         Figures repointed to the headline design (Step 7, DONE 2026-07-01).
+   Artifacts: output/event_study_{fatal,alcohol}_nyt.csv + primary/robust_a/robust_b
+   event PNGs; log 02_csdid_estimation_v2.log. (csdid discipline honored: estimates
+   restore before every estat; method(reg), not DRIPW, on single-county cohorts.)
+
+4. [~ 04b DONE 2026-07-01] RE-RUN heterogeneity + spillover.
+   04b_heterogeneity_rucc.do RAN (StataNow 19.5 SE, exit 0, 0 error codes; recode
+   QC all pass). Changes made to run it: (a) the RUCC CSV still carries OLD coding,
+   so `do patch_madison_sebastian.do` is now called right after import (Madison ->
+   g2012; builds est_sample/always_dry); (b) added a defensive destring of the
+   covariates; (c) added a control-set dimension {alwaysdry = headline within-county
+   est_sample pool | fullpool = as-written notyet + all never-treated}; (d) FIXED the
+   pre-trend capture -- estat pretrend stores p in r(pchi2) not r(p) (was silently
+   missing), and ADDED the interpretable Pre_avg + p from estat event (pre_ok verdict).
+   -> het_rucc_results.csv now has 24 rows (3 outcomes x 2 classifiers x 2 controls x
+   {rural,urban}). HEADLINE cells (RUCC2013, alwaysdry; pre-trend PASS unless noted):
+       Outcome   rural ATT (p)        urban ATT (p)
+       Fatal     -0.809 (0.298)       -0.652 (0.738)
+       Alcohol   -0.413 (0.576)       +0.335 (0.794)  [urban Pre_avg REJECTS p=0.005]
+       Nonalc    -0.396 (0.571)       -0.987 (0.522)
+   All ATTs ns. NB: under RUCC (vs the old 20k cut) the rural-positive/urban-negative
+   alcohol reversal does NOT survive in the point estimates here (rural alcohol -0.41,
+   urban +0.33); the runbook warned "the rural/urban ATTs WILL move on re-estimation."
+   The urban-alcohol pre-trend rejects (Pre_avg p=0.005 alwaysdry / 0.053 fullpool) --
+   read the urban-alcohol cell with caution. Still OPEN under Step 4:
+     04_heterogeneity_robustness.do  -- Madison enters the RURAL arm (this is where
+                                        the attractor result lives). Median split on
+                                        dist_border_aug (+ contamination split on
+                                        nearest_wet_is_oos) + jackknife-by-cohort.
+        [DONE 2026-07-01, exit 0, 41/41 arms. NO attractor gradient (far/near
+         alcohol points the WRONG way; dose not monotone; the starred cells sit on
+         REJECTED pre-trends in 3-4 county cells; jackknife alcohol stable null,
+         fatal drop2012 -> -2.02**). -> het_distance_results.csv; ANALYSIS_LOG #20.
+         NB Madison is URBAN under RUCC (#9), so it enters the urban/far arms, not
+         rural -- the old "Madison enters the RURAL arm" line above is stale.]
+     03_spillovers_v2.do             -- with the corrected control set.
+        [SUPERSEDED by 03_spillovers_v4.do. First run 2026-07-01 QUARANTINED:
+         countywide_wet is miscoded wet-all-window for Boone/Clark (g2010), so no
+         2010 spillover events existed in ANY neighbor column and plain
+         n_wet_neighbors also predates the Madison recode (#23 + R15). FIXED same
+         day: counties.geojson fetched from the public Plotly source,
+         rebuild_neighbor_counts.py -> neighbor_counts_corrected.csv (STAGE-A
+         validated vs _chk 1200/1200), 03 v4.1 merges it at run time; RE-RUN with
+         valid cohorts (22 treated / 7 never; 2010 cohort present). Results in
+         spillover_v4_results.csv + _pathb.csv -- see ANALYSIS_LOG #24. STILL
+         OPEN: fix countywide_wet for Boone/Clark at the next PANEL rebuild.]
+   NOTE (carried from Step 2): the median split wants the PRE-treatment (cohort-1)
+   distance as a STATIC per-county value, but the merged panel holds the YEAR-VARYING
+   dist_border_aug. Broadcast the cohort-1 value to all years of each treated county
+   (a small left-merge of pretreatment_distance_by_treated_v2.csv keyed on fips, e.g.
+   as dist_border_aug_pre) before splitting -- don't split on the time-varying column.
+
+5. [CODED 2026-06-30] ROBUSTNESS (one panel, NOT every table): the conservative-
+   control single row is 02_csdid Section 6c -- HEADLINE ATT (fatal + alcohol) with
+     keep if est_sample==1 & partial_wet==0   (drops Sebastian, Logan, Woodruff)
+   Report it as a single row vs the baseline headline. Because partial_wet units are
+   already coded wet (outside est_sample's dry-control pool), the switch is non-
+   binding: baseline == conservative by construction. CONFIRMED in the 2026-06-30 run
+   (fatal ATT -0.638, alcohol -0.276 -- identical to the Sec 6b within-county row).
+
+6. [DONE] VMT: nothing to do. (The merge added a vmt_present flag -- use it to restrict
+   VMT outcomes to covered county-years; VMT is effectively a 2014+-cohort analysis.)
+
+7. [~ HEADLINE EVENT STUDY DONE 2026-07-01] REGENERATE figures from refreshed CSVs:
+     [x] event_study_plots.py -- REPOINTED to the headline (always-dry) design and
+         RUN. Now lives in ACTUAL/, reads output/event_study_{fatal,alcohol}_
+         headline.csv (event-time, exported by 02_csdid Sec 6d) -> output/
+         es_{fatal,alcohol}_headline_publication.png + es_panel_headline_
+         publication.png. Also Sec 6d emits Stata headline_event_*.png.
+         RUN WITH:  /usr/local/bin/python3 event_study_plots.py   (default python3
+         has no matplotlib). See ANALYSIS_LOG #16.
+     [ ] descriptive_plots.py -- still to regenerate from the refreshed panel.
+
+ORDER MATTERS because: distances feed the panel (step 1->2, both now done), the panel
+feeds estimation (2->3), and heterogeneity/spillover/figures read estimation outputs
+(3->4..7). The remaining path is 3 -> 4 -> 5 -> 7. Do not start Step 3 until the PLACE 2
+.do patch is in place, so the treatment coding matches the distance source set.
+======================================================================

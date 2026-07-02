@@ -1,0 +1,93 @@
+================================================================================
+BRINGBACK_2026-07-01_R15PORT.txt -- what to upload to the claude.ai session
+Session: R15 PORT (briefing CONTEXT_FOR_CLAUDE_CODE_R15_PORT). ANALYSIS_LOG #25.
+================================================================================
+
+STATUS AT A GLANCE
+  ALL 21 GATES PASS (R15_PORT_GATELOG.txt). The canonical panel is now the v2
+  pair, correct AT REST; archives untouched; no estimation re-run needed.
+    arkansas_panel_annual_border_vmt_nonalc_rucc_v2.csv          (1200 x 77)
+    arkansas_panel_annual_border_vmt_nonalc_rucc_origin_v2.csv   (1200 x 84)
+  The _origin_v2 twin is a deliberate T3 extension: 02_csdid and 03 import the
+  origin file, so leaving it defective would have kept the trap armed.
+
+D1-D4 CHOICES (D1-D3 asked before coding; D4 mid-session on the G5 surprise)
+  D1  Logan (05083) as a DISTANCE source: TESTED FIRST -- NOT a no-op, so it
+      stays EXCLUDED (parameterized: --logan-distance-source, default 0).
+      Including it moves 332 dist/nearest cells; biggest: Franklin
+      dist_border 10.352 -> 4.813 mi with nearest flipping to Logan. Logan IS
+      a neighbor-count source everywhere (matches neighbor_counts_corrected).
+  D2  FULL Section-2 timeline written into countywide_wet at rest (option b).
+      cohort / first_treated_year / treated_unit remain PLACE-2-owned; the
+      "CSV carries the old coding by design" convention is RETIRED for
+      countywide_wet. patch_madison_sebastian.do verified idempotent on v2.
+  D3  Plain n_wet_neighbors / share_wet_neighbors / any_wet_neighbor corrected
+      IN PLACE under the same names (== the _chk family by construction).
+  D4  ** THE G5 SURPRISE ** (briefing premise falsified): the archived dist_*
+      columns were THEMSELVES R15-contaminated. The briefing said "dist_*
+      columns are CLEAN ... byte-identical"; empirically the pure Boone/Clark
+      fix changes EXACTLY 44 cells = 5 counties x 2008-09 x dist cols:
+        Carroll  05015 (via Boone):  popcen 27.548->38.511, border 15.412->19.959 (instate only)
+        Newton   05101 (via Boone):  popcen 19.976->35.077, border  9.428->12.173, nearest 05009->05015
+        Garland  05051 (via Clark):  popcen 28.191->47.339, border 17.147->26.600, nearest 05019->05039
+        Nevada   05099 (via Clark):  popcen 29.143->31.733, border  9.160->14.547, nearest 05019->05103
+        Pike     05109 (via Clark):  popcen 29.343->38.149, border  9.720->19.177, nearest 05019->05051
+      (The old sandbox audit checked nearest_wet_fips_aug only for 2008-2011
+      pointing AT Boone/Clark -- it missed that Garland/Nevada/Pike DID point
+      at Clark and Carroll/Newton at Boone in 2008-09.) Will signed off on
+      correcting the 44 cells (increases only; sources were removed). NOT
+      affected: nearest_wet_is_oos (zero changes -> 04's contamination split
+      intact), pretreatment_distance_by_treated_v2.csv (byte-identical, 13
+      rows -> 04's median split intact), all estimation to date (nothing read
+      pre-2010 year-varying distances for these 5 counties; NB Nevada/Newton/
+      Pike are 2010-cohort SPILLOVER counties, so any future distance x
+      spillover interaction now reads correct values).
+
+GATES (mirroring the #24 structure; full log in R15_PORT_GATELOG.txt)
+  G1   adjacency x PLACE-1 timeline reproduces archived _chk 1200/1200  PASS
+  G1b  gate-recomputed corrected counts == border-build output          PASS
+  G2a  corrected-vs-_chk == {Boone/Clark nbrs pre-2010}+{Logan const}   PASS (0 undecomposed)
+  G2b  corrected-vs-PLAIN adds {Madison pre-2012}+{Sebastian const}     PASS (0 undecomposed)
+  G3   monotone; 2010 + 2012 increments present                         PASS
+  G4   v2 cols == neighbor_counts_corrected.csv, n_oos unchanged        PASS (both files, 1200/1200)
+  G5   dist byte-identical EXCEPT exactly the 44 D4 cells (restated);
+       pretreatment + OOS side-files byte-identical to certified        PASS
+  G6   every non-replaced column byte-identical (77 & 84 col files)     PASS
+  G7   Section-2 timeline asserts on both v2 panels                     PASS
+
+PIPELINE NOW CORRECT BY CONSTRUCTION (validated end-to-end)
+  wet_source_timeline.py                the ONE timeline (Section 2), hard
+                                        asserts, idempotent across vintages
+  build_border_augment_v2_patched.py    "PLACE 1 PATCH v2": dual timelines
+                                        (wet_nbr incl Logan / wet_dist excl)
+  merge_step2.py --r15-correct          rewrites countywide_wet + plain nbr
+                                        cols; REFUSES pre-port augments (no
+                                        2010/2012 increment signature)
+  build_panel_v2_r15port.py             surgical archived -> v2 (byte-safe)
+  gate_r15_port.py                      G1-G7 -> R15_PORT_GATELOG.txt
+  Steps 1-2 re-run: 0 stray diffs vs archived 68-col panel outside the
+  corrected columns; corrected columns == v2 panel 100%.
+
+03_spillovers_v4.do IS NOW v4.2 (design untouched; v4.1 results FINAL per #24)
+  Prefers ..._rucc_origin_v2.csv; ASSERTS panel neighbor cols ==
+  neighbor_counts_corrected.csv on 1200/1200 (error 459 otherwise); then
+  prefers the panel columns; archived-panel runtime merge kept as fallback.
+  NOT re-run. STEP 1-2 smoke test: assert passes; spillover cohorts reproduce
+  #24 exactly (22 treated / 7 never; 2010 = Montgomery Nevada Newton Pike
+  Searcy).
+
+UPLOAD LIST
+  Docs:  ANALYSIS_LOG.txt entry #25 (+ updated R15 NOW line), R15_PORT_GATELOG.txt
+  Code:  wet_source_timeline.py, build_panel_v2_r15port.py, gate_r15_port.py,
+         build_border_augment_v2_patched.py, merge_step2.py, 03_spillovers_v4.do
+  Data:  the two v2 panels (if the sandbox needs them; otherwise the gate log
+         is the certificate)
+
+OPEN / FOLLOW-UPS
+  - The DEFECTIVE-by-design archives remain on disk (by additive discipline).
+    Any NEW analysis should import the v2 pair; 02_csdid_estimation_v2.do and
+    04b still import the archived origin panel -- harmless (they key off
+    cohort via PLACE-2) but worth repointing to _origin_v2 at their next edit.
+  - SUBCOUNTY_DISTANCE_NOTES.txt remains the finer treatment of Logan
+    (Booneville) if the distance margin ever needs sub-county resolution.
+================================================================================

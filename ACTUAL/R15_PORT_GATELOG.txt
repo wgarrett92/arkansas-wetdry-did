@@ -1,0 +1,34 @@
+==============================================================================
+R15 PORT GATE LOG  --  generated 2026-07-01 by gate_r15_port.py
+Decisions (confirmed with Will 2026-07-01): D1 Logan EXCLUDED from the
+distance-source set (empirically NOT a no-op: 332 dist/nearest cells
+move when included, e.g. Franklin 10.352 -> 4.813 mi); D2 FULL Section-2
+timeline written to countywide_wet at rest; D3 plain neighbor columns
+corrected IN PLACE under the same names; D4 the 44 R15-contaminated
+dist cells are corrected too (G5 restated below).
+==============================================================================
+[PASS] G1 STAGE A: adjacency x PLACE-1 timeline reproduces archived n_wet_neighbors_instate_chk -- 1200/1200 cells
+[PASS] G1b: gate-recomputed corrected counts == PLACE-1-PATCH-v2 border build output -- 1200/1200
+[PASS] G2a: corrected-vs-_chk == {Boone/Clark nbrs pre-2010} + {Logan nbrs, constant} EXACTLY -- 0 undecomposed
+[PASS] G2b: corrected-vs-PLAIN additionally == {Madison nbrs pre-2012} + {Sebastian nbrs, constant} -- 0 undecomposed
+     Madison AR-neighbor increment set: ['Benton', 'Carroll', 'Crawford', 'Franklin', 'Johnson', 'Newton', 'Washington']
+[PASS] G3a: neighbor counts monotone non-decreasing within county
+[PASS] G3b: 2010 increments present for every Boone/Clark neighbor
+[PASS] G3c: 2012 increments present for every Madison neighbor
+[PASS] G4 (rucc_v2): neighbor columns == neighbor_counts_corrected.csv on all cells; n_oos unchanged -- 1200/1200
+[PASS] G4 (origin_v2): neighbor columns == neighbor_counts_corrected.csv on all cells; n_oos unchanged -- 1200/1200
+[PASS] G5a (rucc_v2): dist_*/nearest_* byte-identical EXCEPT exactly the 44 D4 cells (5 counties x 2008-09), increases only -- 44 changed cells, counties ['05015', '05051', '05099', '05101', '05109'], years [2008, 2009]
+[PASS] G5b (rucc_v2): v2 nearest_wet_fips_aug never points at Boone/Clark pre-2010 -- 0 offending cells
+[PASS] G5a (origin_v2): dist_*/nearest_* byte-identical EXCEPT exactly the 44 D4 cells (5 counties x 2008-09), increases only -- 44 changed cells, counties ['05015', '05051', '05099', '05101', '05109'], years [2008, 2009]
+[PASS] G5b (origin_v2): v2 nearest_wet_fips_aug never points at Boone/Clark pre-2010 -- 0 offending cells
+[PASS] G5c: regenerated pretreatment_distance_by_treated_v2.csv byte-identical to certified (13 treated rows)
+[PASS] G5d: regenerated oos_wet_reference_v2.csv byte-identical to certified
+[PASS] G5e: regenerated augment dist columns reproduce certified on every non-D4 cell -- 0 unexpected diffs
+[PASS] G6 (rucc_v2): every non-replaced column byte-identical (1200 rows, 77 cols) -- 0 stray diffs
+[PASS] G6 (origin_v2): every non-replaced column byte-identical (1200 rows, 84 cols) -- 0 stray diffs
+[PASS] G7 (rucc_v2): Section-2 timeline asserts (Boone/Clark 2010, Madison 2012, trio all-window, always-dry zero, 1200 x 77)
+[PASS] G7 (origin_v2): Section-2 timeline asserts (Boone/Clark 2010, Madison 2012, trio all-window, always-dry zero, 1200 x 84)
+==============================================================================
+RESULT: ALL GATES PASS (G1, G1b, G2a, G2b, G3a-c, G4 x2, G5a-e, G6 x2, G7 x2)
+The v2 panels are certified: arkansas_panel_annual_border_vmt_nonalc_rucc_v2.csv + arkansas_panel_annual_border_vmt_nonalc_rucc_origin_v2.csv
+==============================================================================
