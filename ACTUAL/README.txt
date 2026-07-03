@@ -643,6 +643,24 @@ CODE FILES
                                 year x month file; --selftest runs the vehicle-side
                                 only). Case-insensitive FARS discovery + Latin-1
                                 fallback. RUN + MERGED 2026-06-29
+  06_urban_diagnostics.do       Stata: stress-tests the URBAN-POSITIVE pattern
+                                (#20/#22/#24) -- urban stacked event studies,
+                                jackknife-by-county (origin + spillover arms),
+                                Path B audit w/ county trends, from-zero dose
+                                re-cut, VMT probe. Received from the claude.ai
+                                session; FIXED 2026-07-02 before running: the
+                                urban-treated roster omitted Madison 05087
+                                (g2012 + RUCC-urban -> 4 treated, not 3; assert
+                                + S2 leave-one-out corrected). RAN exit 0.
+                                RESULT: urban-positive pattern NOT robust
+                                (Benton+Saline story; S3 dies on drop-Craighead;
+                                alcohol Path B ns under wild bootstrap; from-zero
+                                urban arm empty; VMT null). See ANALYSIS_LOG #26.
+  urban_diag_pathb_boot.do      Stata: S4 supplement -- boottest cannot follow
+                                reghdfe with 2-way absorbed FE, so this refits
+                                the Path B urban models boottest-compatibly
+                                (identical coefs) and adds wild-cluster
+                                bootstrap p on the 7 urban-dry clusters (#26)
   04b_heterogeneity_rucc.do     Stata: rural/urban split on rural_2013 (PRIMARY) +
                                 rural_pop20k (robustness), Primary+ REG, across
                                 fatal/alcohol/nonalc outcomes; guards on the Madison
@@ -761,6 +779,23 @@ DATA / OUTPUT FILES
                                           identically); certified originals in the
                                           project root remain untouched
   BRINGBACK_2026-07-01_R15PORT.txt        session handback for the R15 port
+  -- session 2026-07-02 (urban diagnostics; ANALYSIS_LOG #26) --
+  urban_diag_results.csv                  S2 origin jackknife (4 urban treated
+                                          incl. Madison, leave-one-out)
+  urban_diag_spill.csv                    S3 spillover jackknife (7 urban-dry)
+  urban_diag_pathb.csv                    S4 Path B audit (verbatim + county
+                                          trends + rural symmetry; p_boot empty
+                                          BY CONSTRUCTION -- see _boot suppl.)
+  urban_diag_pathb_boot.csv               S4 wild-cluster bootstrap supplement
+                                          (alcohol +10.7 -> p_boot=.094 ns;
+                                          fatal p_boot=.031 at the 7-cluster
+                                          resolution floor)
+  urban_diag_fromzero.csv                 S5 extensive-margin re-cut (urban arm
+                                          EMPTY -- itself the finding)
+  urban_diag_vmt.csv                      S6 VMT probe (all null; 2013+ only)
+  origin_event_{level,comp}_urban_{nonres,drink}.csv   S1 urban stacked event
+                                          paths (post all ns -- no jump behind
+                                          the +57%/+39.5% statics)
   -- figures --
   HEADLINE (within-county always-dry, 2026-07-01):
     output/headline_event_{fatal,alcohol}.png            (Stata csdid_plot, Sec 6d)

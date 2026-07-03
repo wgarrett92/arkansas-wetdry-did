@@ -777,6 +777,86 @@ PART A  --  DECISION LOG (chronological)
              distance split is reported for spillover counties.
   STATUS:    done
 
+[2026-07-02] #26  Urban diagnostics (06) RUN: roster fix + wild-bootstrap suppl.
+  DECISION:  Run 06_urban_diagnostics.do (received from the claude.ai session;
+             stress-tests the urban-positive pattern of #20/#22/#24 before it
+             is theorized), with two corrections: (a) FIX the script's stale
+             urban-treated roster -- it hardcoded {Benton 05007, Little River
+             05081, Saline 05125} and OMITTED Madison 05087, so its runtime
+             assert aborted the first run; (b) SUPPLEMENT S4 with a proper
+             wild-cluster bootstrap (urban_diag_pathb_boot.do), because
+             boottest cannot run after reghdfe with two-way absorbed FE /
+             absorbed interactions -- 06's capture-guarded p_boot silently
+             stayed empty, and the 7-cluster inference check is the entire
+             point of S4(iii).
+  WHY:       (a) Madison is g2012 via patch_madison_sebastian.do AND urban
+             under RUCC (code 2, Fayetteville metro; README RUCC note, #9) --
+             the arm definition (cohort>0 & rural_2013==0) correctly returns
+             FOUR counties, matching 05's A_urban (#22). Fixed in three
+             places: the assert (5007 5081 5087 5125), the S2 leave-one-out
+             roster (Madison must be droppable, not silently ride every arm),
+             and the header. (b) The supplement refits S4's models in
+             boottest-compatible form (year dummies + county trends as
+             regressors, absorb(_fipsn) only) -- coefficients reproduce 06's
+             S4 to ~12 digits, so the bootstrap p attaches to the same
+             estimates. NB with 7 clusters the Rademacher null has 2^7 = 128
+             sign assignments -- bootstrap p is coarse (floor ~.016-.031);
+             read levels, not decimals.
+  HOW:       06_urban_diagnostics.do (edited, comment-tagged 2026-07-02) run
+             StataNow 19.5 SE batch, exit 0, no r() errors, 21+10 postfile
+             rows + 4 event CSVs; urban_diag_pathb_boot.do run exit 0.
+             Inputs: archived rucc_origin panel + neighbor_counts_corrected
+             .csv (certified #24 artifact) -- IDENTICAL cohorts off the v2
+             panel by gate G4 (#25), so the R15 port does not touch these
+             results.
+  RESULT:    The urban-positive pattern does NOT survive the discipline that
+             retired the rural attractor:
+             S1 (urban stacked events, the strongest diagnostic): COMP drink
+                pre flat but POST ALL NS (largest Tp1 +.71 p=.13) -- no jump
+                behind the +39.5% static; LEVEL drink same (post ns).
+             S2 (origin jackknife, now incl. Madison): full urban drink
+                LEVEL +57.3% (p=.019) / COMP +39.5% (p=.032) reproduce #22;
+                drop-Benton -> +34.9% (p=.14) / +28.3% (p=.22); drop-Saline
+                -> +49.8% (p=.15) / +26.1% (p=.29); drop-Madison or
+                drop-Little River STRENGTHEN it. => a Benton+Saline county
+                story (M4), not an urban-wide effect.
+             S3 (spillover jackknife, 7 urban-dry): fatal +4.88 (p=.014, pre
+                PASS) is killed by dropping CRAIGHEAD 05031, a never-treated
+                CONTROL (-> +1.91, p=.20, pre REJECTS p=.016); several other
+                drops break pre-trends (drop-Faulkner pre p=.0001; drop-
+                Lonoke pre p~1e-12); nonalc does NOT track fatal across
+                drops (full +3.44 p=.10; sign flips on drops). => control-
+                pool / pre-trend fragility, weak support for M2.
+             S4 (Path B audit): verbatim urban fatal +18.1 / alcohol +10.7 /
+                nonalc +7.5 per 0->1 share; honest scale = per-within-SD
+                (.068): 1.23 / 0.72 / 0.51 crashes. County trends do NOT
+                collapse them (M3 disfavored) BUT the wild-cluster bootstrap
+                (supplement): fatal p .003 -> .031; ALCOHOL p .010 -> .094
+                (crosses .05, ns); nonalc .069 -> .141. => alcohol Path B
+                positive is a 7-cluster inference artifact; fatal survives
+                only at the bootstrap resolution floor.
+             S5 (from-zero extensive margin): urban arm EMPTY (no urban
+                always-dry county starts at zero exposure and flips) -- the
+                increment "events" carry the whole urban spillover result;
+                rural from-zero: fatal ns, alcohol -1.51 but pre REJECTS
+                (p=.017), tiny cells (n=36).
+             S6 (VMT probe, 2013+ descriptive): ALL NULL (urban treated post
+                -.019 p=.46; urban dry L.share -.027 p=.55; rural likewise)
+                -- no M2 exposure signature (caveat: Benton absorbed, no
+                pre-2013 VMT).
+             FILES: urban_diag_results.csv, urban_diag_spill.csv,
+             urban_diag_pathb.csv (+ _boot.csv supplement),
+             urban_diag_fromzero.csv, urban_diag_vmt.csv,
+             origin_event_{level,comp}_urban_{nonres,drink}.csv,
+             06_urban_diagnostics.log, urban_diag_pathb_boot.log.
+  PAPER:     Mechanism adjudication (claude.ai session, read-out guide) is
+             OPEN, but the first-pass read is convergent: small-cluster
+             inference fragility + a Benton/Saline composition story, with no
+             dynamic jump, no extensive margin, and no VMT trace. Do NOT
+             theorize an urban attractor/exposure channel from #20/#22/#24 as
+             they stand; frame the urban cells as suggestive at most.
+  STATUS:    done (adjudication pending in the claude.ai session)
+
 
 ================================================================================
 PART R  --  REVERSALS, DEAD-ENDS & CORRECTIONS (backfilled 2026-07-01)
