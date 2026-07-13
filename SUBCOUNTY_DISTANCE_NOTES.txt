@@ -1,0 +1,95 @@
+================================================================
+SUB-COUNTY DISTANCE REFINEMENT -- build_subcounty_distance.py
+Notes, findings, and integration into the rerun sequence
+================================================================
+Author:  (script by Claude; review/run by Will Garrett)
+Date:    2026-06-26
+Inputs:  ALCOHOLIC_BEVERAGE_WET_DRY_AREAS.shp (ABC layer 60, pub 2025-02),
+         pop_centroids.csv (your pop-weighted centroids), transition_summary.csv
+Outputs: dist_subcounty_by_treated.csv, wet_area_share_by_county.csv,
+         offpremise_source_manifest.csv
+
+
+WHAT THIS BUYS
+==============
+A ROBUSTNESS LAYER over dist_border_instate/_aug, not a replacement. The county
+binary treats a "wet county" as uniformly wet, but 42 AR counties contain BOTH
+wet and dry sub-areas. This recomputes the pre-treatment border distance against
+the actual wet RETAIL POLYGONS (county/city/township wet jurisdictions), so the
+distance reflects where off-premise access really sits. Emit
+dist_border_subcty_instate beside the centroid-county distance and run the
+median split both ways; report whether membership moves. The sharper input feeds
+the same place the headline does -- the distance median-split and the attractor
+catchment.
+
+
+KEY DATA FINDINGS (the reasons to trust / bound the numbers)
+============================================================
+1. ACT 655 PARKS ARE NOT OFF-PREMISE SOURCES. The layer tags 68 polygons
+   type=Wet that are state parks (wet by statute, Act 655, ON-premise, no
+   takeaway). Counting them as sources falsely turns dry controls into access
+   points -- e.g. Crawford's ONLY wet area is Lake Fort Smith State Park. The
+   script drops any wet polygon whose notes contain "655"/"3-9-103" (or whose
+   name ends "State Park"). After the drop: 46 counties have a genuine
+   off-premise wet jurisdiction.
+
+2. SOURCE SET RECONCILES TO YOUR CODING. 33 non-treated off-premise wet
+   counties = 31 always-wet + Logan (05083) + Sebastian (05131). Those two are
+   exactly your flagged cases: Logan = beer & native-wine only (partial_wet),
+   Sebastian/Fort Smith = the contamination recode. NB the CURRENT panel CSV
+   still codes Logan AND Sebastian countywide_wet=0; the shapefile-derived
+   sources already reflect your INTENDED post-recode coding, so they run ahead
+   of the panel. Confirm the panel recode lands the same way.
+
+3. PRODUCT RESTRICTIONS -> a "liquor distance" toggle. 7 sources are beer/wine
+   only ("No Liquor"/"Beer Only"/"Beer & Native Wine"): Arkansas, Carroll,
+   Crittenden, Franklin, Jefferson, Logan, Woodruff. They ARE off-premise access
+   for the project's margin (beer/wine in stores) -> kept by default
+   (LIQUOR_ONLY=False). Flip LIQUOR_ONLY=True for a packaged-liquor-only
+   distance as a robustness cut. See offpremise_source_manifest.csv for the full
+   per-polygon list (beerwine_only column).
+
+
+SCOPE / LIMITS -- state these where you use the variable
+========================================================
+* IN-STATE ONLY. The shapefile is Arkansas-only. For the 4 OOS-contamination
+  counties (Little River->Bowie TX, Polk->Le Flore OK, Sevier->McCurtain OK,
+  Sharp->Oregon MO) the in-state value OVERSTATES distance. Build the augmented
+  version as row-wise min(dist_border_subcty_instate, your existing OOS
+  distance). The script prints this reminder; it does not do the merge for you
+  (your OOS geometry lives in build_border_augment_v2.py / the augment CSV).
+* STATIC 2025 SNAPSHOT. No usable transition timing (munidate populated on
+  17/260 rows, ~all 2024-10-23). Time-awareness is handled at the COUNTY level:
+  a source county's wet polygons count only if it was wet as of the treated
+  unit's pre-period (always-wet, earlier cohort, or Sebastian). The sub-county
+  refinement is purely WHERE within a valid source the wet area sits. Using 2025
+  sub-county geography to proxy in-window geography is an assumption -- safe for
+  stable always-dry/parks areas, weaker near cities that flipped mid-window.
+* CENTROID, not pop. Distances are pop-centroid -> nearest wet polygon. Validated
+  end-to-end on geometry; final values depend on YOUR pop_centroids.csv. If its
+  columns are not fips/lat/lon, edit COL_* in load_centroids().
+
+
+WHERE IT SLOTS IN (RERUN_RUNBOOK order)
+=======================================
+Step 1-adjacent (a wet-source GEOMETRY input), BEFORE the panel merge. It does
+NOT touch build_border_augment_v2.py, pop_centroids.csv, or the OOS ring -- it
+reads the shapefile directly and emits a new column. Recommended sequence:
+  a. Run build_subcounty_distance.py -> dist_subcounty_by_treated.csv.
+  b. (Optional) row-wise min with OOS distance -> dist_border_subcty_aug.
+  c. Merge dist_border_subcty_instate (and _aug) onto the analysis panel
+     alongside dist_border_aug, keyed on fips (time-invariant; broadcast to all
+     years, like the other pre-treatment distance vars).
+  d. In 04_heterogeneity_robustness.do, re-run the median split on
+     dist_border_subcty_aug and report it next to the dist_border_aug split.
+     If the rural/urban membership and the attractor sign are stable across both
+     metrics, that is a clean robustness win for the central result.
+
+
+VERIFY BEFORE RELYING ON IT
+===========================
+[ ] pop_centroids.csv columns match COL_FIPS/COL_LAT/COL_LON (else edit).
+[ ] Panel recode codes Logan + Sebastian wet (match the shapefile source set).
+[ ] Decide LIQUOR_ONLY default for the headline vs robustness cut.
+[ ] Do the OOS min-merge for the 4 contamination counties before any median split.
+================================================================

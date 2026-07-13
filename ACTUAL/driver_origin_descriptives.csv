@@ -1,0 +1,6 @@
+post,grp,n_nonres,n_resknown,n_nonres_drink,n_resknown_drink,n_nonres_dry,sh_nonres,sh_nonres_drink,sh_nonres_dry
+0,always_dry,1833,3784,273,704,640,.48440802,.38778409,.16913319
+0,treat_rural,352,628,48,108,120,.56050956,.44444445,.19108281
+1,treat_rural,304,548,42,111,90,.55474454,.37837839,.16423358
+0,treat_urban,155,331,22,66,29,.46827793,.33333334,.087613292
+1,treat_urban,352,752,70,148,47,.46808511,.47297296,.0625

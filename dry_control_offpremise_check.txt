@@ -1,0 +1,85 @@
+======================================================================
+OFF-PREMISE CONTAMINATION CHECK OF DRY CONTROL COUNTIES
+Verification of partial/sub-county wet status against ABC geography
+======================================================================
+Generated: 2026-06-19
+Source:    Arkansas ABC / GIS Office, ALCOHOLIC_BEVERAGE_WET_DRY_AREAS
+           (FeatureServer layer 60; pub. 2025-02-05). 260 polygons.
+Field key: type in {Wet,Dry}; 'Dry with ABC Permits' = private clubs
+           (ON-PREMISE only). Liquor-by-the-glass elections excluded
+           from this layer by design; State Parks wet by statute (Act 655).
+
+BOTTOM LINE
+======================================================================
+Of the 29 counties whose COUNTY-LEVEL status is Dry, NONE contains a
+wet retail city/township. The only 'Wet' sub-areas inside dry counties
+are STATE PARKS (on-premise, statutory) -> they do NOT create off-premise
+package access. Dry counties are 'Dry with ABC Permits' = private clubs
+(on-premise) only. => The always-dry control pool is CLEAN on the
+off-premise treatment margin, with ONE exception: Sebastian (Fort Smith).
+
+THE ONE CONTAMINATION CASE
+======================================================================
+Sebastian County (05131): has NO whole-county row; it is split by
+judicial district. City of Fort Smith = WET (full off-premise retail);
+rest of county (Historic Sebastian Twp) = Dry. ~75% of county pop is in
+Fort Smith. ACTION: do NOT use Sebastian as a clean dry control; treat
+as wet (or exclude). This is the textbook 'wet city in dry county.'
+
+29 DRY CONTROL COUNTIES - ALL CLEAN ON OFF-PREMISE
+======================================================================
+FIPS   County        Off-premise access     Other wet area
+----------------------------------------------------------------------
+05003  Ashley        NONE (private clubs)   (none)
+05011  Bradley       NONE (private clubs)   1 state park(s)
+05021  Clay          NONE (private clubs)   (none)
+05023  Cleburne      NONE (private clubs)   (none)
+05031  Craighead     NONE (private clubs)   (none)
+05033  Crawford      NONE (private clubs)   1 state park(s)
+05045  Faulkner      NONE (private clubs)   1 state park(s)
+05049  Fulton        NONE (private clubs)   1 state park(s)
+05053  Grant         NONE (private clubs)   1 state park(s)
+05057  Hempstead     NONE (private clubs)   1 state park(s)
+05061  Howard        NONE (private clubs)   1 state park(s)
+05063  Independence  NONE (private clubs)   (none)
+05065  Izard         NONE (private clubs)   (none)
+05071  Johnson       NONE (private clubs)   (none)
+05073  Lafayette     NONE (private clubs)   1 state park(s)
+05075  Lawrence      NONE (private clubs)   3 state park(s)
+05079  Lincoln       NONE (private clubs)   1 state park(s)
+05085  Lonoke        NONE (private clubs)   1 state park(s)
+05097  Montgomery    NONE (private clubs)   (none)
+05099  Nevada        NONE (private clubs)   1 state park(s)
+05101  Newton        NONE (private clubs)   (none)
+05105  Perry         NONE (private clubs)   1 state park(s)
+05109  Pike          NONE (private clubs)   2 state park(s)
+05115  Pope          NONE (private clubs)   1 state park(s)
+05127  Scott         NONE (private clubs)   (none)
+05129  Searcy        NONE (private clubs)   (none)
+05137  Stone         NONE (private clubs)   1 state park(s)
+05145  White         NONE (private clubs)   (none)
+05149  Yell          NONE (private clubs)   3 state park(s)
+
+PRODUCT-LIMITED WET COUNTIES (in the WET set; decide handling)
+======================================================================
+Logan    (05083): WET, 'Beer and Native Wine Only' (no liquor stores).
+Woodruff (05147): WET, City of Augusta 'Beer Only'.
+  -> These DO have off-premise (packaged beer/wine), just product-limited.
+     If either sits in your always-wet set, flag as partial-wet for a
+     sensitivity check; they are not dry controls.
+
+CAVEAT - DO NOT USE THIS LAYER FOR COHORT DATES
+======================================================================
+The layer's free-text notes mislabel some transition years: Boone County
+is noted '2012 General Election Result' but actually went wet in NOV 2010
+(AP/SoS returns, 7,582-6,771). Use the SoS-verified dates for cohorts;
+trust this layer only for STATUS GEOGRAPHY, not dates.
+
+HOW TO USE
+======================================================================
+Diff your 31 always-dry controls against the 29 above. Any control NOT
+in this list is one of: (a) Sebastian -> reclassify to wet/exclude;
+(b) a county that went wet in 2024 (after the 2008-2023 window) -> it was
+dry-with-private-clubs in-window, so still a clean control, but confirm
+it had no wet retail enclave during the window.
+======================================================================

@@ -1,0 +1,91 @@
+================================================================
+BORDER-AUGMENTED DATASET -- build notes & column dictionary
+Built: 2026-06-15   Script: build_border_augment.py
+================================================================
+
+WHAT THIS ADDS
+==============
+Out-of-state (OOS) border-county alcohol access, on the OFF-PREMISE
+retail margin (your clean countywide treatment margin). Produces a
+corrected distance-to-nearest-wet and augmented wet-neighbor counts
+per county-year, 75 AR counties x 2008-2023.
+
+INPUTS
+  /mnt/project/arkansas_did_panel.csv   (your panel; 1200 rows)
+  counties.geojson                      (plotly county polygons, all US)
+
+OUTPUTS
+  arkansas_did_panel_with_border.csv    panel + 9 new cols (1200 x 30)
+  distance_neighbor_augment.csv         fips x year + 9 new cols (merge key)
+  oos_wet_reference.csv                 36 OOS ring counties, editable coding
+  pretreatment_distance_by_treated.csv  per treated county, dist at cohort-1
+
+NEW COLUMNS (keyed on fips x year)
+  dist_nearest_wet_instate     Haversine mi to nearest IN-STATE wet county
+                               that year (replicates current logic; excludes
+                               self). R = 3958.8 mi.
+  dist_nearest_wet_aug         same, but candidate set adds accessible OOS
+                               wet counties (this is the corrected metric).
+  nearest_wet_is_oos           1 if the nearest (aug) wet county is OOS.
+  nearest_wet_fips_aug         FIPS of that nearest wet county.
+  n_wet_neighbors_instate_chk  my recomputed in-state wet-neighbor count
+                               (QC col: matches your n_wet_neighbors 1200/1200).
+  n_oos_wet_neighbors          # accessible OOS wet neighbors (time-invariant).
+  n_wet_neighbors_aug          in-state wet + accessible OOS wet neighbors.
+  any_wet_neighbor_aug         1 if n_wet_neighbors_aug > 0.
+  share_wet_neighbors_aug      n_wet_neighbors_aug / total neighbors (in+OOS).
+
+HEADLINE RESULT (pre-treatment distance, treated counties)
+  median distance: in-state-only 26.7 mi -> augmented 23.1 mi
+  Border counties move; interior counties unchanged. Biggest mover:
+    Little River 33.2 -> 20.7 mi (nearest wet = Bowie TX/Texarkana),
+    flips from "far" to "close" on a median split. Benton, Sharp,
+    Columbia, Randolph, Chicot, Crittenden all shorten via OOS access.
+  NB: your reported in-state median was 28.2 mi; mine is 26.7 on the
+  SAME margin. The 1.5-mi gap is almost certainly the centroid method
+  (this build uses GEOMETRIC centroids) -- i.e. exactly your open
+  population-weighted-vs-geometric question. Resolve before finalizing
+  (see "centroids" below).
+
+CODING DECISIONS
+  AR wet-by-year: from the panel's countywide_wet (authoritative for the
+    12 treated + always-wet/dry split). NB: Madison (05087) is coded
+    always-wet here; if it is reclassified as a 2012 transition, rerun.
+  OOS off-premise wet status (essentially constant 2008-2023 on this margin):
+    MO, OK  -> wet, confidence HIGH (MO no dry counties; OK package stores
+               statewide entire window; SQ792 Oct-2018 was on-premise only)
+    TX, LA  -> wet, confidence VERIFY (AR-facing counties wet; confirm the
+               specific Bowie/Cass TX and Union/Claiborne/etc. LA parishes)
+    MS, TN  -> river border; accessible ONLY via whitelisted bridge pairs:
+                 Crittenden 05035 -> Shelby TN 47157  (West Memphis I-40/55)
+                 Phillips   05107 -> Coahoma MS 28027 (Helena Bridge US-49)
+                 Chicot     05017 -> Washington MS 28151 (Greenville US-82)
+               other cross-river counties coded accessible=0 (no near bridge).
+  Adjacency: queen contiguity from GeoJSON, 0.0005-deg tolerance. Validated
+    against your in-state n_wet_neighbors -> 100% (1200/1200). All 36 AR-OOS
+    border pairs are true shared borders (polygon distance 0).
+
+CAVEATS / KNOBS
+  - Centroids are GEOMETRIC. To switch to population-weighted (your open
+    question), run with --popcentroids file.csv [fips,lon,lat]. Census
+    publishes county population-weighted centroids; that file overrides.
+  - Distance is centroid-to-centroid, consistent with your current metric.
+    A distance-to-nearest-wet-BORDER alternative would be smaller for
+    adjacent counties; flagged as a possible refinement, not implemented.
+  - Adjacency can be overridden with your Census county-adjacency file via
+    --adjacency (authoritative); the GeoJSON version already matches it
+    in-state, so this is optional.
+  - TX/LA "verify" rows: confirm against state ABC before publication.
+  - Crossing whitelist is intentionally conservative (3 pairs). Edit
+    CROSSINGS in the script if you add bridges (e.g. a second Desha route).
+
+SUGGESTED USE
+  1. Heterogeneity median split: use dist_nearest_wet_aug (pre-treatment
+     value in pretreatment_distance_by_treated.csv) instead of the in-state
+     metric. Report both; the reshuffle IS the robustness story.
+  2. Contamination split: group treated counties by nearest_wet_is_oos at
+     cohort-1 (Benton, Sharp, Columbia, Little River, Randolph = OOS-access;
+     Boone, Clark, Saline, Sevier, Van Buren, Hot Spring, Polk = in-state).
+  3. Spillover design: replace n_wet_neighbors / any_wet_neighbor with the
+     _aug versions so OOS-adjacent dry counties aren't miscoded as exposed.
+================================================================

@@ -1,0 +1,73 @@
+================================================================
+BORDER-AUGMENTED DATASET v2 -- population-weighted centroids
+Built: 2026-06-15   Script: build_border_augment_v2.py  (supersedes v1)
+================================================================
+
+WHAT CHANGED FROM v1
+  - Distances now use 2020 Census POPULATION-WEIGHTED centroids (Centers of
+    Population), source: USpopcenters CRAN package (county2020), which bundles
+    the Census CenPop2020_Mean_CO file. Saved as pop_centroids.csv [fips,lon,
+    lat,pop,name] for AR + 6 border states (762 counties). AR coverage 75/75.
+  - Two distance metrics reported (origin = dry county pop-center):
+       popcen : pop-centroid -> nearest wet county POP-CENTROID
+       border : pop-centroid -> nearest POINT on nearest wet county border
+    each in-state-only and augmented-with-OOS.
+  - Verified border coding folded in:
+       TX Bowie/Cass: off-premise beer/wine only, wet_from_year = 2013 (dry
+                      before; Texarkana still no packaged liquor). flag VERIFY.
+       LA parishes:   wet via municipalities, partly dry by ward. flag PARTIAL.
+       MO, OK:        wet entire window. MS/TN: bridge crossings only.
+
+NEW COLUMNS (fips x year)
+  dist_popcen_instate / dist_popcen_aug   pop-centroid -> pop-centroid (mi)
+  dist_border_instate / dist_border_aug   pop-centroid -> wet border   (mi)
+  nearest_wet_fips_aug / nearest_wet_is_oos   (based on border_aug)
+  n_wet_neighbors_instate_chk  (QC: matches panel 1200/1200)
+  n_oos_wet_neighbors          (now time-varying: TX neighbors wet only 2013+)
+  n_wet_neighbors_aug / any_wet_neighbor_aug / share_wet_neighbors_aug
+
+HEADLINE: THE METRIC CHOICE DOMINATES THE OOS CHOICE
+  Median pre-treatment distance, treated counties:
+       popcen in-state 26.3 | popcen +OOS 24.7
+       border in-state 10.8 | border +OOS 10.1
+  Border distance is ~1/3 of centroid distance because most treated counties
+  are ADJACENT to a wet county -- their residents sit ~10 mi from the wet edge,
+  not ~26 mi from a wet centroid. The geometric-centroid metric was measuring
+  county geometry, not access. The Little River "33 mi / far" figure is fully
+  resolved: 7.5 mi (Bowie TX edge) to 13.6 mi (in-state Miller edge).
+
+  Counties where OUT-OF-STATE access is the nearest (contamination group):
+       Little River -> Bowie TX (beer/wine, 2013+)
+       Polk         -> Le Flore OK
+       Sevier       -> McCurtain OK
+       Sharp        -> Oregon MO
+  The other 8 treated counties' nearest wet is IN-STATE (Benton->Washington,
+  Boone->Carroll, Clark->Dallas, Columbia->Ouachita, Saline->Pulaski,
+  Randolph->Greene, Van Buren->Conway, Hot Spring->Garland).
+  Genuinely "far" even after OOS+border: Sharp (~22 mi). Everyone else 4-13 mi.
+
+RECOMMENDED USE
+  - Primary metric: dist_border_aug (pop-centroid -> nearest wet border).
+    Theory: residents drive to the edge of wet territory, where county-line
+    stores cluster. Robust to large-county geometry; retains 4-22 mi spread.
+  - Robustness metric: dist_popcen_aug. Report the median split under BOTH;
+    the split membership IS sensitive to the metric, so show it's robust (or
+    flag where it isn't) rather than picking silently.
+  - Contamination split: group treated counties by nearest_wet_is_oos at
+    cohort-1 (4 OOS-access vs 8 in-state-access, listed above).
+  - Spillover: use n_wet_neighbors_aug / any_wet_neighbor_aug (OOS-aware,
+    TX time-varying) in place of the in-state-only panel versions.
+
+KNOBS / CAVEATS
+  - TX margin: coded "wet" = any off-premise (beer/wine counts) from 2013. For
+    a LIQUOR-ONLY margin, set TX wet_from=None (Texarkana has no packaged
+    liquor); Little River's nearest then reverts to in-state Miller (~13.6 mi
+    border) -- still close, so the substantive result is unchanged.
+  - LA parishes flagged PARTIAL: wet in towns, dry in some wards. Border
+    distance to a partial parish slightly understates if the wet area is
+    interior. Low stakes (no treated county's nearest wet is LA).
+  - border distance computed over the 8 nearest candidates by pop-centroid
+    (the nearest-border county is always among them); exact otherwise.
+  - To re-run with a different pop-centroid vintage, replace pop_centroids.csv
+    (USpopcenters also ships county2000/county2010).
+================================================================

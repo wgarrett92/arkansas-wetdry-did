@@ -856,7 +856,121 @@ PART A  --  DECISION LOG (chronological)
              theorize an urban attractor/exposure channel from #20/#22/#24 as
              they stand; frame the urban cells as suggestive at most.
   STATUS:    done (adjudication pending in the claude.ai session)
-
+[2026-07-02] #27  Urban mechanism ADJUDICATION (claude.ai session) -- CLOSED
+  DECISION:  Adjudicate the urban-positive pattern (#20/#22/#24) against the
+             06 diagnostics (#26) using the read-out guide's M1-M4 scoring.
+             VERDICT: M4 (Benton+Saline composition) explains the origin
+             result; M1 (genuine urban attractor) REJECTED; M2 (exposure)
+             REJECTED on its own tell; M3 (differential growth) UPGRADED to
+             leading explanation for the Path B / spillover positives --
+             the linear-trends test is scored passed-but-underpowered, not
+             as evidence against M3. Do NOT theorize an urban attractor or
+             exposure channel. Two amendments to the #26 first-pass read
+             are recorded below; otherwise #26 stands as written.
+  WHY:       Verification: every #26 headline number reproduces from the
+             exported CSVs; boot-supplement verbatim coefficients match 06
+             S4 to 12 digits (18.11737479219159 vs ...148), so bootstrap
+             p's attach to the intended estimates. No discrepancies found
+             between #26 and the artifacts.
+             AMENDMENT 1 (anti-M1, sharper than #26): the bootstrap does
+             NOT kill everything -- cty_trends specs SURVIVE it (fatal
+             p_boot 0/128; alcohol 4/128 = .031; nonalc 2/128 = .016). The
+             damning read is that what survives is NOT alcohol-specific:
+             nonalc is as bootstrap-significant as alcohol, and per-within-
+             SD the decomposition is fatal 1.23 = alcohol 0.72 + nonalc
+             0.51 -- alcohol is not the majority. A signal loading
+             comparably on non-alcohol fatalities cannot support an
+             alcohol-access mechanism at any p-value. S4 verdict restated:
+             alcohol-verbatim is a 7-cluster inference artifact (.010 ->
+             .094) AND the surviving residue has the wrong fingerprint.
+             AMENDMENT 2 (M3 rescored): the guide's test was "cty_trends
+             collapse => M3." Two objections: (a) linear county trends are
+             a weak weapon against the actual candidate confounder -- NW
+             Arkansas metro growth 2008-2023 is nonlinear -- and cty_trends
+             INCREASES the point estimates, a classic trend-misspecification
+             symptom, not evidence of trend absence; (b) S3's drop pattern
+             is exactly nonparallel-trend contamination in a 7-cluster
+             panel: the +4.88 hinges on ONE never-treated control
+             (Craighead 05031 -> +1.91 p=.20, pre flips to REJECT p=.016)
+             and three drops detonate pre-trends (drop-Faulkner pre
+             p=8.7e-5; drop-Lonoke p~2.5e-12). M2's own tell also fails:
+             nonalc does NOT track fatal across S3 drops (drop-Craighead:
+             fatal +1.91 vs nonalc -2.39; drop-Lincoln 05079: fatal +5.25
+             vs nonalc -3.05 -- sign flips, not tracking), and S6 is
+             uniformly null.
+             M4 carries the origin result: +57.3/+39.5 dies on drop-Benton
+             (+34.9 p=.14 / +28.3 p=.22) or drop-Saline (+49.8 p=.15 /
+             +26.1 p=.29) and STRENGTHENS on drop-Madison or drop-Little
+             River; S1 shows no post jump on any horizon (largest Tp1 +.71
+             p=.13; LEVEL's largest post coef is negative, Tp4 -.95); S5
+             extensive margin absent (urban from-zero arm empty).
+  HOW:       In-session artifact review (claude.ai adjudication session):
+             06_urban_diagnostics.log, urban_diag_pathb_boot.log, all ten
+             CSVs, ANALYSIS_LOG #20-#26. No new estimation. One open
+             supplement authored: urban_diag_pathb_boot_webb.do (adds
+             weighttype(webb) alongside rademacher -- 6^7 draws de-coarsens
+             the 128-assignment floor; boottest's own warning recommends
+             it). Expected to change NO verdict (alcohol-verbatim .094 is
+             not returning below .05); it removes the "read levels, not
+             decimals" footnote from reported bootstrap p's.
+  RESULT:    Prediction-vs-outcome record (defense file): the read-out
+             guide predicted drop-Crawford or drop-Faulkner as the S3
+             killers; the actual linchpin was CRAIGHEAD, a never-treated
+             CONTROL. Recorded explicitly so the diagnostic is documented
+             as pre-registered in structure, not reverse-engineered.
+  PAPER:     (i) Origin cells -> mechanisms section as descriptive, with
+             the two-county jackknife dependence and absent dynamic
+             response stated. (ii) Path B urban -> appendix, quoted
+             per-within-SD (x0.068) with BOTH p and p_boot columns, and the
+             nonalc loading stated in text -- it is the strongest defense
+             against a referee resurrecting the urban attractor. (iii) S3
+             spillover +4.88 NOT headline-able; report with the
+             drop-Craighead row alongside. (iv) Affirmative mechanism story
+             remains the travel-channel dynamic finding (t+1/t+2 fatal and
+             nonalc reductions), flanked by the negative-results battery.
+  STATUS:    done (webb supplement optional; run at will, no gate on it)
+             [RUN 2026-07-02 -> #28: anchor held, no verdict changes]
+[2026-07-02] #28  Webb-weights bootstrap supplement (S4 Path B urban) -- RUN
+  DECISION:  Run urban_diag_pathb_boot_webb.do (authored in #27): identical
+             build + specs to the certified #26 bootstrap supplement, with
+             boottest run TWICE per spec -- Rademacher (sanity anchor) and
+             Webb 6-point. Webb's null has 6^7 = 279,936 sign assignments
+             vs Rademacher's 2^7 = 128, so reps(9999) samples a fine null
+             instead of hitting the ~.008 resolution floor; boottest itself
+             recommended Webb in the #26 log.
+  WHY:       Removes the "read levels, not decimals" caveat from the
+             reported bootstrap p's. Protocol: p_rad must reproduce #26's
+             p_boot EXACTLY before p_webb is read -- with 7 clusters the
+             Rademacher null is fully enumerated (deterministic), so an
+             exact match proves the estimates are the same, not a seed
+             coincidence.
+  HOW:       StataNow 19.5 SE batch, exit 0, no r() errors. ANCHOR HOLDS:
+             b/se/p byte-identical to urban_diag_pathb_boot.csv and p_rad
+             == .03125/.09375/.140625 (verbatim), 0/.03125/.015625
+             (cty_trends) verbatim. Same inputs as #26 (archived
+             rucc_origin panel + patch + neighbor_counts_corrected.csv,
+             assert(match); 105 obs / 7 clusters every spec).
+  RESULT:    NO VERDICT CHANGES (as #27 predicted). p_rad -> p_webb:
+               fatal    verbatim   .03125  -> .0359  (sig either way)
+               alcohol  verbatim   .09375  -> .0799  (ns either way)
+               nonalc   verbatim   .140625 -> .1238  (ns)
+               fatal    cty_trends  0      -> .0065  (floor resolved)
+               alcohol  cty_trends .03125  -> .0331
+               nonalc   cty_trends .015625 -> .0387
+             Prediction-vs-outcome (#27 flagged it): the fatal cty_trends
+             0/128 was indeed a floor artifact, resolving to .0065 -- small,
+             NOT near .05, so no extra M3 brick; the spec survives
+             strongly. The #27 Amendment-1 anti-M1 fingerprint is INTACT
+             under Webb: nonalc (.0387) remains as bootstrap-significant as
+             alcohol (.0331) under cty_trends -- the surviving signal is
+             still not alcohol-specific.
+             FILES: urban_diag_pathb_boot_webb.{csv,log,dta}; certified
+             #26 artifacts untouched.
+  PAPER:     Cite p_webb as the reported bootstrap p in the appendix Path B
+             table (alongside the analytic p); alcohol-verbatim .0799
+             replaces .094 in the S4 inference-artifact sentence; drop the
+             resolution-floor footnote.
+  STATUS:    done
 
 ================================================================================
 PART R  --  REVERSALS, DEAD-ENDS & CORRECTIONS (backfilled 2026-07-01)

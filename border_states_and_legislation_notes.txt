@@ -1,0 +1,260 @@
+================================================================
+SUPPLEMENT: Border-State Wet/Dry Coding + Transition Legislation
+Compiled: 2026-06-15
+Purpose: (A) rules for coding out-of-state border-county alcohol
+access, (B) detailed legislation for the treated counties, (C)
+where border data enters the pipeline, (D) workshop action items.
+================================================================
+
+KEY CONCEPTUAL REFRAME (read first)
+===================================
+"Going wet" in Arkansas is NOT a single binary. It is a BUNDLE of
+margins that switch on at different dates and geographies:
+
+  1. OFF-PREMISE RETAIL  -- liquor stores (capped 1 per 7,500 pop),
+     unlimited beer/wine permits, beer/wine in grocery/convenience.
+     Turns on at the COUNTYWIDE wet vote. <-- this is your treatment.
+  2. ON-PREMISE BEER/WINE in restaurants (no private club needed).
+     Also turns on at the countywide vote.
+  3. ON-PREMISE LIQUOR-BY-THE-DRINK (bars, mixed drinks, spirits).
+     SEPARATE sub-county margin. Pre-2013 cohorts needed a separate
+     city/town local-option election. After Act 1008 (2013), a city
+     in a county that went wet AFTER 1 Nov 2012 with >=100 active ABC
+     permits could authorize LBD by ordinance instead. Staggered,
+     sub-county, and later than the countywide vote.
+  4. PRIVATE CLUBS -- existed in "dry" counties since ~2003 (ABC began
+     issuing private-club permits). On-premise consumption was NOT
+     zero at baseline; Benton Co. had the most private clubs in the
+     state before its 2012 vote. Craighead/Faulkner are dry today but
+     full of "bar and grill" private-club permits.
+  5. SUNDAY SALES -- legalized alongside the transitions. Relevant to
+     the monthly/DOW panel.
+
+Implications:
+  - Your off-premise treatment date is the CLEAN margin. Good choice;
+    the institutional record supports it.
+  - The on/off-premise heterogeneity you want is genuinely messy:
+    LBD is sub-county and time-varying, and the OFFICIAL Arkansas GIS
+    "ABC Wet and Dry Areas" shapefile explicitly does NOT encode on-
+    vs off-premise. To split on/off you need ABC PERMIT-TYPE records,
+    not the shapefile.
+  - "Dry" never meant "no access." Many border counties had out-of-
+    state off-premise access (below); all dry counties had private-
+    club on-premise. The travel-cost reduction from going wet is
+    therefore heterogeneous across treated counties by construction.
+
+
+SECTION A -- BORDER-STATE OFF-PREMISE ACCESS CODING RULES
+=========================================================
+What matters for distance/contamination is OFF-PREMISE availability
+across the line, not on-premise. Code the out-of-state ring (pull
+exact out-of-state neighbors from your Census county-adjacency file,
+which already includes cross-state adjacencies) using these rules:
+
+MISSOURI (north border)
+  No dry counties. Wet statewide, entire 2008-2023 window, incl.
+  Sunday. -> Every AR northern-tier border county had off-premise
+  access to the north THROUGHOUT. Confidence: HIGH.
+  AR counties touching MO: Benton (treated), Carroll, Boone (treated),
+  Marion, Baxter, Fulton, Randolph (treated), Clay.
+
+OKLAHOMA (west border)
+  Package/liquor stores existed in ALL OK counties the entire window,
+  including pre-2018. SQ 792 (effective 1 Oct 2018) added full-strength
+  beer/wine in grocery/convenience stores and enabled restaurant/bar
+  liquor-by-the-drink in formerly "dry" (= no-LBD) counties. That is an
+  ON-PREMISE / retail-format change, NOT an off-premise availability
+  change. -> For OFF-PREMISE, OK = wet throughout. The 2018 date only
+  matters if you ever model on-premise/bar access across the border.
+  Confidence: HIGH. (This confirms your prior "OK pre-2018 non-affecting"
+  note and gives the reason.)
+  AR counties touching OK: Benton (treated), Little River (treated),
+  Sevier (treated), Polk (treated), Washington, Crawford, Sebastian,
+  Scott, Montgomery, Howard.
+
+TEXAS (southwest; Bowie Co./Texarkana)
+  Bowie County wet for off-premise. TX uses precinct-level local option
+  elsewhere, but the AR-facing area (Texarkana) is wet. Confidence:
+  MED-HIGH; verify exact TX neighbor counties via adjacency file.
+  AR counties touching TX: Miller, Little River (treated).
+
+LOUISIANA (south border)
+  Mostly wet: 51 wet parishes, 15 wet-with-some-dry-wards; 27 parishes
+  ban Sunday sales. Union Parish (faces Columbia) -> verify, likely wet.
+  Confidence: MED; verify the specific facing parishes.
+  AR counties touching LA: Miller, Lafayette, Columbia (treated), Union,
+  Ashley, Chicot.
+
+MISSISSIPPI (southeast; across the Mississippi River)
+  Patchwork. Possession legal statewide since 2020 (HB 1087) but SALES
+  still require local option; ~26 dry-for-liquor counties as of 2025.
+  CROSSING CONSTRAINT DOMINATES (see below) -- only bridge crossings
+  matter, so MS county status is largely moot except near a crossing.
+
+TENNESSEE (northeast; across the Mississippi River)
+  Liquor dry-by-default for many counties, but BEER is widely available
+  regardless of wet/dry, and Shelby Co. (Memphis) is wet. CROSSING
+  CONSTRAINT DOMINATES -- West Memphis (Crittenden) <-> Memphis is the
+  major crossing.
+
+RIVER-CROSSING CONSTRAINT (critical for E/SE and parts of S/SW)
+  Straight-line Haversine distance (your R=3958.8 method) OVERSTATES
+  accessibility wherever the border is the Mississippi or Red River and
+  no bridge exists. For E/SE AR counties, route distance-to-nearest-wet
+  through actual crossings, or restrict cross-river wet neighbors to
+  counties reachable by a bridge. Major Mississippi-River crossings:
+  West Memphis (I-40/I-55, Crittenden Co.); Helena area; Lake Village /
+  US-82 (Chicot/Desha) to MS. Without this correction, E/SE counties
+  will look closer to out-of-state wet access than they are.
+
+
+SECTION B -- TREATED-COUNTY TRANSITION DETAIL
+=============================================
+All "wet vote" dates are the COUNTYWIDE off-premise margin = your
+treatment. On-premise LBD (where noted) is later/sub-county.
+
+COHORT 2010
+  Boone (05009) -- countywide wet 2010. Seat: Harrison. NW, borders MO.
+    Pre-dates Act 1008 -> LBD required separate city elections.
+  Clark (05019) -- countywide wet 2010. Seat: Arkadelphia (college town:
+    Henderson State + Ouachita Baptist). Pre-dates Act 1008.
+
+COHORT 2012 (Nov 2012)
+  Benton (05007) -- wet Nov 2012; retail sales began 2013. Seat:
+    Bentonville (Walmart HQ region; Rogers, Siloam Springs). Had the
+    MOST private clubs in the state pre-vote. Act 1008 (2013) later
+    eased LBD-by-ordinance for its cities. Borders MO and OK.
+  Sharp (05135) -- wet Nov 2012. Seat: Ash Flat. NE Arkansas.
+  *** Madison (05087) -- TWO independent sources (Arkansas Business 2016;
+      Arkansas Money & Politics 2016) list Madison as voting wet at the
+      SAME TIME as Benton/Sharp (Nov 2012). Madison is NOT in your 12
+      treated counties. VERIFY IMMEDIATELY -- this looks like a possible
+      13th treated unit, analogous to the Hot Spring/Polk discovery. If
+      it transitioned in-window it belongs in a 2012 cohort (or explain
+      the exclusion). ***
+
+COHORT 2014 (Nov 4, 2014)
+  Saline (05125) -- wet 4 Nov 2014; beer/wine sales Jan 2015; ABC issued
+    ~21 liquor permits (population-based). Central, suburban Little Rock
+    (Benton, Bryant). Pre-vote: only private clubs.
+  Columbia (05027) -- wet 4 Nov 2014; ~4 liquor permits; sales Jan 2015.
+    Seat: Magnolia. South AR, borders LA. Pre-vote: only private clubs.
+  Context: same-day statewide Issue 4 (make all counties wet) FAILED
+    57.4% no, heavily funded ($1.8M) by border-county liquor stores
+    ("Citizens for Local Rights") -- textbook Bootleggers-and-Baptists.
+
+COHORT 2016
+  Little River (05081) -- wet 2016; OFF-PREMISE ONLY (liquor stores, gas-
+    station beer; no bars on transition). Seat: Ashdown. SW corner,
+    borders TX (Texarkana/Bowie) and OK (McCurtain). Partially-dry under
+    one definition.
+
+COHORT 2018
+  Randolph (05121) -- wet 2018; ended a decades-long prohibition. Seat:
+    Pocahontas. NE, borders MO.
+
+COHORT 2020 (Nov 3, 2020)
+  Van Buren (05141) -- wet 3 Nov 2020; OFF-PREMISE ONLY. Seat: Clinton.
+    North-central, pop ~15.8k. (NB: the COUNTY, not the city of Van
+    Buren which is in Crawford Co. ~100 mi west.)
+  Sevier (05133) -- wet 3 Nov 2020, 67.3% yes (3,499-1,699). Seat:
+    De Queen. SW, borders OK (McCurtain), pop ~15.8k.
+
+COHORT 2022 (mechanically excluded from NYT estimation -- no later
+comparators within the FARS window)
+  Hot Spring (05059) -- wet 2022; ended a decades-long prohibition.
+    Seat: Malvern (adjacent to Garland/Hot Springs). Central.
+  Polk (05113) -- wet 2022. Seat: Mena. Far west, borders OK (Le Flore).
+
+PRIMARY-SOURCE VERIFICATION (for the "exact legislation" gap)
+  - Arkansas ABC Division: permit-type records by county/date give the
+    on/off-premise and LBD timing the GIS shapefile omits.
+  - Arkansas GIS "ABC Wet and Dry Areas" (gis.arkansas.gov, updated after
+    Nov general elections): authoritative geography incl. townships/wards/
+    cities -> use for sub-county/moist coding, NOT on/off-premise.
+  - County clerk records: official local-option status per A.C.A.
+  - The 38% registered-voter petition threshold is the selection
+    mechanism -- worth a sentence in the paper (treated counties are the
+    ones that could organize past a high bar; not random).
+
+
+SECTION C -- WHERE BORDER DATA ENTERS THE PIPELINE (ranked)
+===========================================================
+1. DISTANCE-TO-NEAREST-WET test (your pending median-split-at-28.2-mi
+   task). Distances are currently to nearest IN-STATE wet county only.
+   For border counties (esp. W and N) the true nearest off-premise
+   source is out-of-state and CLOSER. Recompute centroid distances
+   against AR-wet + out-of-state-wet (crossing-adjusted) BEFORE running.
+   This likely reshuffles the 7-close/5-far split. HIGHEST PRIORITY.
+
+2. TREATMENT CONTAMINATION / "deep-dry" robustness. Border dry counties
+   with out-of-state off-premise access had a SMALLER travel-cost drop
+   when going wet than interior dry counties. Add a split: treated
+   counties WITH vs WITHOUT a pre-treatment out-of-state wet neighbor
+   (Benton, Little River, Sevier, Polk, Columbia all border out-of-state
+   wet). Directly answers the workshop "they'd already be treated" point.
+
+3. SPILLOVER/NEIGHBOR construction. A dry AR neighbor that ALSO borders
+   an out-of-state wet county had its nearest access UNCHANGED by the AR
+   transition -> should not be coded as spillover-exposed (or flag it).
+   Augment n_wet_neighbors / share_wet_neighbors / any_wet_neighbor to
+   include out-of-state wet neighbors.
+
+4. MAPS/FIGURES. Shade a one-county ring of out-of-state counties by
+   wet/dry; mark the river crossings. Visually resolves the "no isolated
+   dry county, no never-treated" framing the audiences kept probing.
+
+
+SECTION D -- WORKSHOP ACTION ITEMS (both transcripts)
+=====================================================
+HIGH VALUE
+  - FARS vehicle registration -> resident vs visitor test for the rural
+    ATTRACTOR hypothesis. FARS reliably has vehicle REGISTRATION STATE
+    (tests out-of-state inflow). County-of-origin is NOT a standard FARS
+    field -- verify what your vintage carries before promising the
+    within-AR cross-county version. (Raised twice: Max / Speaker 12.)
+  - Disjoint outcome panels (Speaker 6): report NON-alcohol fatal
+    (= fatal minus alcohol) and alcohol fatal SEPARATELY, not all-fatal
+    (which contains alcohol). Cleaner mechanism mapping; the distance
+    channel should move non-alcohol fatals too via total VMT.
+  - Non-fatal crashes + DUIs as outcomes (Speaker 4 / Nick): distinguishes
+    "drinking less" vs "drinking closer," and adds power (fatal crashes
+    are rare, ~6.6/county-yr). Source: ARDOT for non-fatal/total crashes;
+    DUI arrests are public.
+  - Identification framing (Speaker 2, emphatic): DON'T frame as classic
+    border-discontinuity (assumes non-travel). This is CROSS-BORDER
+    SHOPPING / tax-avoidance. Cite the gas-tax border literature (people
+    far from the border are untreated; a treatment window in distance).
+    Re-label your "border-discontinuity robustness" accordingly. Ties to
+    the distance-to-nearest-wet design (#1 above) and Speaker 9's
+    distance-to-border-as-intensity suggestion.
+
+MEDIUM VALUE
+  - Year-8 spike (Speaker 4): almost certainly a COMPOSITION artifact --
+    only the earliest cohorts (Boone/Clark 2010) reach t+8; far-horizon
+    estimates ride on 1-2 counties (see your fig5 cohort-composition).
+    Cap the event-study window where >=3-4 cohorts are present; don't
+    over-interpret the spike.
+  - Rural/urban cutoff (Speaker 12): 20k is arbitrary. Use USDA Rural-
+    Urban Continuum Codes (RUCC) or Census urban-share instead, and
+    report the split's sensitivity.
+  - Church density (Speaker 11): control for DENOMINATION/sect, not just
+    churches_pc. Southern Baptist vs Catholic differ sharply on
+    prohibition support. ARDA / Religion Census denominational shares
+    are a refinement over CBP NAICS 813110.
+  - Selection (Speaker 6): switching wet isn't random (38% petition
+    threshold). DiD doesn't fix selection on time-varying unobservables;
+    lean on NYT + pre-trends, and consider a matched / synthetic-control
+    comparison ("a county like this that stayed dry") as robustness.
+  - Sunday-sales literature (Andy/Speaker 1): add to lit review -- all
+    treated counties legalized Sunday sales; supports the monthly/DOW
+    panel. (He also offered to dig up a spillover paper -- follow up.)
+
+THEORY
+  - Disutility term: the audience (and Udall) converged on adding the
+    disutility of accident/penalty -- you've added the lambda*pi*kappa
+    term. Keep it; just lock the comparative-static signs (you flagged a
+    dA/dP (-) vs dP/dD_c (+) inconsistency to fix). The multiplicative
+    impaired-miles form m = alpha*a + gamma*a*d, with gamma*a*d -> 0 on
+    going wet, is the clean version.
+================================================================

@@ -1,0 +1,13 @@
+fips,county,cohort,pre_year,popcen_instate,popcen_aug,border_instate,border_aug,nearest_wet_is_oos,nearest_wet
+05009,Boone,2010,2009,24.459,24.459,11.156,11.156,0,"Carroll,AR"
+05019,Clark,2010,2009,28.191,28.191,12.683,12.683,0,"Dallas,AR"
+05007,Benton,2012,2011,16.836,16.836,8.524,8.524,0,"Washington,AR"
+05135,Sharp,2012,2011,41.282,30.293,26.792,22.156,1,"Oregon,MO"
+05027,Columbia,2014,2013,32.077,32.077,11.192,11.192,0,"Ouachita,AR"
+05125,Saline,2014,2013,18.0,18.0,6.218,6.218,0,"Pulaski,AR"
+05081,Little River,2016,2015,23.918,18.223,13.581,7.47,1,"Bowie,TX"
+05121,Randolph,2018,2017,30.532,25.017,10.479,10.479,0,"Greene,AR"
+05133,Sevier,2020,2019,22.583,22.583,10.038,9.804,1,"McCurtain,OK"
+05141,Van Buren,2020,2019,29.345,29.345,8.47,8.47,0,"Conway,AR"
+05059,Hot Spring,2022,2021,14.9,14.9,3.881,3.881,0,"Garland,AR"
+05113,Polk,2022,2021,35.165,35.165,22.834,11.54,1,"Le Flore,OK"

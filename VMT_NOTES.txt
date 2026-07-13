@@ -1,0 +1,63 @@
+================================================================
+VMT DATA -- build notes & column dictionary
+Built: 2026-06-15   Script: build_vmt_panel.py
+Source: ARDOT "Road and Street Mileage Report - County Summary",
+        annual .xls, 2013-2023 (one sheet per county, grand-total line).
+================================================================
+
+WHAT THIS IS
+  Daily Vehicle Miles of Travel (DVMT) and road length by county, from the
+  county grand-total line of each ARDOT report. Parsed 11 files x 75 counties
+  = 825 county-years. All 75 counties matched to FIPS; the population-area
+  subtotals (rural / small-urban / urbanized) reconcile to the total exactly.
+
+FILES
+  vmt_county_year.csv            fips x year (2013-2023), 825 rows
+  arkansas_panel_border_vmt.csv  border-aug panel + VMT cols (1200 rows;
+                                 VMT blank for 2008-2012)
+
+COLUMNS (vmt_county_year.csv, and merged into the panel)
+  dvmt_total          total Daily Vehicle Miles of Travel (all roads)
+  vmt_annual          = dvmt_total * 365  (annual VMT)
+  road_length_total   total road/street centerline miles (road SUPPLY)
+  dvmt_rural          DVMT on roads in <5,000-pop areas
+  dvmt_small_urban    DVMT on roads in 5,000-49,999-pop areas
+  dvmt_urbanized      DVMT on roads in >=50,000-pop areas
+  fatal_per_100m_vmt    fatal_crashes / (vmt_annual / 1e8)   [panel only]
+  alcohol_per_100m_vmt  alcohol_fatal_crashes / (vmt_annual / 1e8) [panel only]
+
+COVERAGE CAVEAT (important)
+  VMT exists for 2013-2023 only (68.8% of the panel). 2008-2012 are NaN.
+  Consequences for the C&S-A design:
+    - 2010 cohort (Boone, Clark): NO pre-treatment VMT.
+    - 2012 cohort (Benton, Sharp): NO pre-treatment VMT.
+    - 2014 cohort (Saline, Columbia): 1 pre-year (2013) only.
+    - 2016/2018/2020/2022 cohorts: usable pre/post VMT.
+  So VMT-based outcomes are effectively a 2014+-cohort / 2013-2023-window
+  analysis. State this when you use it; don't run VMT outcomes on the full
+  cohort set as if pre-trends were observed.
+
+HOW TO USE / WHAT IT TESTS
+  - Mechanism test (your "each mile more dangerous?" question): regress the
+    exposure-adjusted rate (fatal_per_100m_vmt) on treatment. If going wet
+    cuts crashes roughly in proportion to VMT, the per-mile risk is flat
+    (fewer miles, same danger); if crashes fall MORE than VMT, per-mile risk
+    fell too. This separates the "fewer miles" channel from "safer miles."
+  - VMT as outcome: does going wet reduce total county VMT? (travel-distance
+    channel predicts a drop, concentrated where pre-treatment distance was
+    large -- interact with dist_border_aug from the border augmentation).
+  - road_length_total is road SUPPLY, not travel; use as a control / density
+    measure, not as the VMT mechanism variable.
+
+LIMITATION (be honest in the paper)
+  DVMT is TOTAL vehicle travel, not alcohol-related or "impaired" miles. Your
+  theoretical m_i is impaired miles, which VMT does not isolate. VMT lets you
+  test the broad exposure channel (miles driven) and per-mile risk, but it is
+  a partial proxy for the impaired-miles mechanism, not a direct measure.
+
+MERGE / REPRODUCE
+  Keyed on fips x year. To merge onto any panel version:
+    panel.merge(vmt_county_year, on=['fips','year'], how='left')
+  Re-run build_vmt_panel.py to regenerate (xlrd sector-size warnings are
+  cosmetic; data reads correctly).
+================================================================

@@ -1,0 +1,157 @@
+================================================================================
+BRINGBACK_2026-07-01.txt -- what to upload to the claude.ai session
+Session: RUN/DIAGNOSE/DOCUMENT of 05 / 04 / 03 (briefing CONTEXT_FOR_CLAUDE_CODE)
+================================================================================
+
+NUMBERING NOTE: the claude.ai and local sessions appended colliding entry
+numbers #17-#19; the log keeps claude.ai's #17-#19 and the local entries are
+now #20 (04 splits), #21 (05 draft), #22 (05 corrected), #23 (03 quarantine),
+#24 (R15 fix + 03 v4.1), R15 (countywide_wet reversal).
+
+STATUS AT A GLANCE
+  04  RAN CLEAN.  het_distance_results.csv (41/41 arms). No attractor gradient.
+  05  UPDATED FILE TRANSFERRED + RAN CLEAN (supersedes the provisional draft
+      run). Two targeted patches were needed (below). RESULT: NOT supportive
+      of the rural attractor -- rural arms all null, urban drinking inflow
+      rises (+57% level** / +39% comp**). jwdid arm non-convergent.
+  03  FIRST RUN QUARANTINED (defective neighbor counts -- R15), then FIXED
+      LOCALLY same day: rebuild_neighbor_counts.py (public Plotly geojson,
+      STAGE-A validated vs _chk 1200/1200) -> neighbor_counts_corrected.csv,
+      03 v4.1 re-run with VALID cohorts. Results below; quarantine lifted.
+
+UPLOAD LIST
+  Logs:    04_heterogeneity_robustness.log, 05_driver_origin.log,
+           csdid_v4_spillover.log (v4.1 run)
+  Tables:  het_distance_results.csv, driver_origin_results.csv,
+           driver_origin_descriptives.csv, origin_event_level_rural.csv,
+           origin_event_comp_rural.csv, spillover_v4_results.csv,
+           spillover_v4_pathb.csv, neighbor_counts_corrected.csv
+  Code:    rebuild_neighbor_counts.py (the R15 fix -- port its wet-timeline
+           correction into the next panel rebuild)
+  Docs:    ANALYSIS_LOG.txt entries #20-#24 + R15 (full numbers there)
+
+PATCHES APPLIED TO THE TRANSFERRED 05 (targeted; design untouched)
+  1. Section 4 arm conditions fully parenthesized. As shipped,
+     "... | always_dry==1 & `expv'>0" (Stata & binds tighter than |) left the
+     treated subset unguarded, so zero-exposure county-years survived and the
+     rural/urban COMPOSITION arms died with "exposure() must be greater than
+     zero". Pool comp + all level arms were unaffected.
+  2. postfile outcome str16 -> str28 (the two share_csdid rows truncated to
+     identical labels).
+  Also installed hdfe from SSC (jwdid dependency; error was "You need to
+  install hdfe" -> invalid syntax). jwdid now RUNS but hits "convergence not
+  achieved" on both outcomes -- the fully-interacted ETWFE Poisson is
+  overparameterized on these tiny counts (mass collinearity omissions in the
+  log). Left as-is per the briefing; adjust or drop in the claude.ai session.
+
+--------------------------------------------------------------------------------
+R15 -- THE NEW DATA BUG (was blocking spillovers; WORKED AROUND locally)
+--------------------------------------------------------------------------------
+countywide_wet in the canonical panel is 1 for the ENTIRE window for Boone
+(05009) and Clark (05019), despite cohort = 2010 (R9: 2010 confirmed primary).
+Consequences, verified 2026-07-01:
+  - plain n_wet_neighbors (ORIGINAL panel build, what 03 v4 used): no 2010
+    increments anywhere AND still pre-Madison-recode (no 2012 increments for
+    Madison's dry neighbors Crawford/Johnson/Newton -> they sat in the
+    never-treated spillover control pool).
+  - n_wet_neighbors_instate_chk / _aug / share_wet_neighbors_aug (PLACE-1
+    rebuild): Madison FIXED (13 counties increment 2012) but Boone/Clark 2010
+    still missing -- build_border_augment_v2_patched.py line 105 reads the
+    panel's countywide_wet as its wet timeline.
+  - Under _chk cohorts, Crawford/Johnson/Newton move never->2012 (pool becomes
+    22 treated / 7 never). Boone/Clark's dry neighbors cannot be identified
+    locally: counties.geojson lives only in the claude.ai sandbox.
+  - Examples of wrong cohorts in this run: Searcy 2020 (should be 2010 via
+    Boone), Nevada 2014 / Pike 2022 (Clark 2010 missed), Newton 0 (Boone 2010 +
+    Madison 2012 both missed).
+  - NOT affected (verified): all dist_* columns (nearest_wet_fips_aug never
+    points at Boone/Clark in 2008-11); 02 direct ATTs, 04 splits, 05 (all key
+    off cohort / first_treated_year, which are correct).
+WORKAROUND APPLIED LOCALLY (2026-07-01, #24): counties.geojson fetched from the
+public Plotly source; rebuild_neighbor_counts.py recomputes in-state neighbor
+counts under the corrected PLACE-2 wet timeline. THREE GATES ALL PASS:
+  (1) STAGE A: under the PLACE-1 timeline the rebuild reproduces
+      n_wet_neighbors_instate_chk on 1200/1200 cells (adjacency proven identical);
+  (2) corrected-vs-_chk diff decomposes EXACTLY as {Boone/Clark neighbors
+      pre-2010} + {Logan neighbors, constant level};
+  (3) monotone non-decreasing; 2010 increments present.
+-> neighbor_counts_corrected.csv, merged by 03 v4.1 at run time. The canonical
+panel columns are STILL defective -- port the fix into the next panel rebuild.
+
+--------------------------------------------------------------------------------
+03 v4.1 CORRECTED COHORTS + RESULTS (#24; quarantine lifted)
+--------------------------------------------------------------------------------
+COHORTS (29 always-dry: 22 spillover-treated / 7 never; the old "~20/9-11"
+anchor reflected the DEFECTIVE build):
+  0    : Ashley Bradley Craighead Lincoln Lonoke White Yell
+  2010 : Montgomery Nevada Newton Pike Searcy       <- Boone/Clark nbrs, NEW
+  2012 : Crawford Fulton Independence Izard Johnson Lawrence  <- Madison nbrs in
+  2014 : Grant Lafayette Perry
+  2016 : Hempstead Howard
+  2018 : Clay
+  2020 : Cleburne Faulkner Pope Stone
+  2022 : Scott
+NB: only 7 never-treated dry controls remain; csdid notyet mitigates.
+
+PATH A (spillover_v4_results.csv):
+  Pooled Primary+ REG (pre PASS): fatal -0.30 (p=.67), alcohol -0.29 (p=.55),
+  nonalc -0.01 (p=.98). dripw / nocov: null.
+  RUCC strata: RURAL alcohol -1.20 (p=.029**) -- numerically reproduces v3's
+  -1.19 -- BUT Pre_avg REJECTS (p=.022); rural fatal -0.47 ns (pre PASS);
+  rural nonalc +0.73 ns (pre REJECT .0004). URBAN dry neighbors POSITIVE:
+  fatal +4.88 (p=.014**, pre PASS), nonalc +3.44 (p=.10), alcohol +1.44 ns
+  (7-county arm, n=112 -- read cautiously).
+PATH B (spillover_v4_pathb.csv):
+  Pooled alcohol share_wet_corr +1.74 (p=.020**), L_share_wet_aug +2.44
+  (p=.024**) -- POSITIVE, wrong direction for shedding. Urban strata strongly
+  positive (fatal +18.1***, alcohol +10.7***, nonalc +7.5**); rural nonalc
+  -3.27 (p=.013**), rural fatal -2.51 (p=.13).
+READ: the redistribution signature is NOT cleanly recovered. The v3 symmetry
+pair is dead on both sides: the direct partner (+1.38 rural alcohol) fell to
+-0.41 under RUCC (#15), and the spillover side reproduces in magnitude but
+fails pre-trends. The URBAN-positive pattern now recurs across 03/04/05.
+
+--------------------------------------------------------------------------------
+04 HEADLINES (full table in het_distance_results.csv; ANALYSIS_LOG #20)
+--------------------------------------------------------------------------------
+Medians as predicted: border 10.479 (Randolph NEAR), popcen 24.459; membership
+matches the handoff table exactly.
+  5a border: alcohol far -1.09 (p=.16) vs near +0.98 (p=.26) -- WRONG direction;
+             fatal far -0.83 (p=.17) vs near -1.05 (p=.56). popcen: both alcohol
+             arms Pre_avg REJECT.
+  5b contam: oos alcohol +0.86 (p=.002***) but Pre_avg REJECT p=.003 (4-county
+             cell); instate all null.
+  5c dose:   NOT monotone. rural_nonadj fatal -1.19 (p=.061*, pre PASS, and
+             NEGATIVE); rural_adj alcohol +1.02*** on REJECTED pre (3 counties);
+             urban null.
+  5d jack:   alcohol stable null (-0.89..+0.40); fatal drop2012 -> -2.02**
+             (p=.015) vs drop2014 -> -0.03: the 2012 cohort pulls the pooled
+             fatal ATT toward zero. No drop manufactures a positive.
+READ: convergent NON-confirmation of the catchment gradient; corroborates #15
+attenuation. Significant cells all sit on failed pre-trends in 3-4 county cells.
+
+--------------------------------------------------------------------------------
+05 CORRECTED DESIGN, FINAL RUN (ANALYSIS_LOG #22; supersedes the #21 draft run)
+--------------------------------------------------------------------------------
+QC: DR_ZIP residence-known coverage ~99% in every rural x post cell, moves <1pp
+with treatment -- no coverage confound to caveat.
+STATIC ARMS (b -> % = 100*(exp(b)-1); attractor wants RURAL positive):
+                         RURAL                      URBAN
+  n_nonres       level   +16.0% (p=.44)             -14.9% (p=.069*)
+                 comp     -2.3% (p=.82)              -3.8% (p=.44)
+  n_nonres_drink level   +38.2% (p=.33)             +57.3% (p=.019**)
+                 comp    -23.0% (p=.18)             +39.5% (p=.032**)
+  n_nonres_dry   level    -0.7% (p=.97)              -9.3% (p=.64)
+   (sharpest)    comp     -9.0% (p=.60)              +5.0% (p=.80)
+EVENT PATHS (stacked by cohort, rural arm):
+  COMP: pre flat, post null. LEVEL: pre-path NOT flat (Tm5 -0.47 p=.007,
+  Tm4 -0.60 p=.022), post null/mixed -- caveat even the rural level read.
+ROBUSTNESS: jwdid non-convergent (see PATCHES above). Raw-share csdid (floored):
+  rural sh_nonresident -0.078 (p=.42), _drink -0.146 (p=.34).
+READ: the attractor signature (positive rural LEVEL + COMP, flat pre) is ABSENT;
+the only robust signal is URBAN drinking inflow rising -- same direction as the
+#21 draft run and the 04 splits. Together with 03 v4.1 (#24: symmetry pair dead
+on both sides, urban dry neighbors positive), no leg of the rural attractor has
+clean supporting evidence; the mechanism framing needs a rethink before the
+write-up. The URBAN-positive pattern across 03/04/05 is the emerging theme.
+================================================================================

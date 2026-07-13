@@ -1,0 +1,382 @@
+ARDOT ADT_Linear field-inspection probe
+service: https://gis.ardot.gov/referenced/rest/services/SIR_TIS/ADTLinear/FeatureServer/0
+
+======================================================================
+1. LAYER METADATA
+======================================================================
+  name           : ADT_Linear
+  geometryType   : esriGeometryPolyline
+  maxRecordCount : 2000
+  displayField   : County_Station
+  field count    : 158
+
+======================================================================
+2. FIELD DICTIONARY (name : type : alias)
+======================================================================
+  OBJECTID                     esriFieldTypeOID           OBJECTID
+  County_Station               esriFieldTypeString        County_Station
+  Latitude_Use                 esriFieldTypeDouble        Latitude_Use
+  Longtitude_Use               esriFieldTypeDouble        Longtitude_Use
+  stat                         esriFieldTypeString        stat
+  year_2016                    esriFieldTypeInteger       year_2016
+  year_2015                    esriFieldTypeInteger       year_2015
+  year_2014                    esriFieldTypeInteger       year_2014
+  year_2013                    esriFieldTypeInteger       year_2013
+  year_2012                    esriFieldTypeInteger       year_2012
+  year_2011                    esriFieldTypeInteger       year_2011
+  year_2010                    esriFieldTypeInteger       year_2010
+  year_2009                    esriFieldTypeInteger       year_2009
+  year_2008                    esriFieldTypeInteger       year_2008
+  year_2007                    esriFieldTypeInteger       year_2007
+  year_2006                    esriFieldTypeInteger       year_2006
+  year_2005                    esriFieldTypeInteger       year_2005
+  year_2004                    esriFieldTypeInteger       year_2004
+  year_2003                    esriFieldTypeInteger       year_2003
+  year_2002                    esriFieldTypeInteger       year_2002
+  year_2001                    esriFieldTypeInteger       year_2001
+  year_2000                    esriFieldTypeInteger       year_2000
+  year_1999                    esriFieldTypeInteger       year_1999
+  year_1998                    esriFieldTypeInteger       year_1998
+  year_1997                    esriFieldTypeInteger       year_1997
+  year_1996                    esriFieldTypeInteger       year_1996
+  year_1995                    esriFieldTypeInteger       year_1995
+  year_1994                    esriFieldTypeInteger       year_1994
+  year_1993                    esriFieldTypeInteger       year_1993
+  year_1992                    esriFieldTypeInteger       year_1992
+  year_1991                    esriFieldTypeInteger       year_1991
+  year_1990                    esriFieldTypeInteger       year_1990
+  year_1989                    esriFieldTypeInteger       year_1989
+  year_1988                    esriFieldTypeInteger       year_1988
+  year_1987                    esriFieldTypeInteger       year_1987
+  year_1986                    esriFieldTypeInteger       year_1986
+  AH_RoadID                    esriFieldTypeString        AH_RoadID
+  AH_BLM                       esriFieldTypeDouble        AH_BLM
+  AH_ELM                       esriFieldTypeDouble        AH_ELM
+  TruckPercent                 esriFieldTypeInteger       TruckPercent
+  year_2017                    esriFieldTypeInteger       year_2017
+  County                       esriFieldTypeInteger       County
+  Route                        esriFieldTypeString        Route
+  Section                      esriFieldTypeString        Section
+  Direction                    esriFieldTypeString        Direction
+  RuralUrbaArea                esriFieldTypeSmallInteger  RuralUrbaArea
+  TypeRoad                     esriFieldTypeSmallInteger  TypeRoad
+  RouteSign                    esriFieldTypeSmallInteger  RouteSign
+  AH_District                  esriFieldTypeString        AH_District
+  created_user                 esriFieldTypeString        created_user
+  created_date                 esriFieldTypeDate          created_date
+  last_edited_user             esriFieldTypeString        last_edited_user
+  last_edited_date             esriFieldTypeDate          last_edited_date
+  AH_Length                    esriFieldTypeDouble        AH_Length
+  MostRecentADT                esriFieldTypeInteger       MostRecentADT
+  Comment                      esriFieldTypeString        Comment
+  GlobalID                     esriFieldTypeGlobalID      GlobalID
+  DIS_County                   esriFieldTypeString        DIS_County
+  DIS_Inset                    esriFieldTypeString        DIS_Inset
+  DIS_State                    esriFieldTypeString        DIS_State
+  year_2018                    esriFieldTypeInteger       year_2018
+  DIS_COLOR                    esriFieldTypeString        DIS_COLOR
+  year_2019                    esriFieldTypeInteger       year_2019
+  True_County_Station          esriFieldTypeString        True_County_Station
+  TruckPercent_1996            esriFieldTypeInteger       TruckPercent_1996
+  TruckPercent_1997            esriFieldTypeInteger       TruckPercent_1997
+  TruckPercent_1998            esriFieldTypeInteger       TruckPercent_1998
+  TruckPercent_1999            esriFieldTypeInteger       TruckPercent_1999
+  TruckPercent_2000            esriFieldTypeInteger       TruckPercent_2000
+  TruckPercent_2001            esriFieldTypeInteger       TruckPercent_2001
+  TruckPercent_2002            esriFieldTypeInteger       TruckPercent_2002
+  TruckPercent_2003            esriFieldTypeInteger       TruckPercent_2003
+  TruckPercent_2004            esriFieldTypeInteger       TruckPercent_2004
+  TruckPercent_2005            esriFieldTypeInteger       TruckPercent_2005
+  TruckPercent_2006            esriFieldTypeInteger       TruckPercent_2006
+  TruckPercent_2007            esriFieldTypeInteger       TruckPercent_2007
+  TruckPercent_2008            esriFieldTypeInteger       TruckPercent_2008
+  TruckPercent_2009            esriFieldTypeInteger       TruckPercent_2009
+  TruckPercent_2010            esriFieldTypeInteger       TruckPercent_2010
+  TruckPercent_2011            esriFieldTypeInteger       TruckPercent_2011
+  TruckPercent_2012            esriFieldTypeInteger       TruckPercent_2012
+  TruckPercent_2013            esriFieldTypeInteger       TruckPercent_2013
+  TruckPercent_2014            esriFieldTypeInteger       TruckPercent_2014
+  TruckPercent_2015            esriFieldTypeInteger       TruckPercent_2015
+  TruckPercent_2016            esriFieldTypeInteger       TruckPercent_2016
+  TruckPercent_2017            esriFieldTypeInteger       TruckPercent_2017
+  TruckPercent_2018            esriFieldTypeInteger       TruckPercent_2018
+  TruckPercent_2019            esriFieldTypeInteger       TruckPercent_2019
+  Year_TruckPercent            esriFieldTypeInteger       Year_TruckPercent
+  label2                       esriFieldTypeString        label2
+  ATR_Type                     esriFieldTypeString        ATR_Type
+  Year_ADT                     esriFieldTypeString        Year_ADT
+  year_2020                    esriFieldTypeInteger       year_2020
+  year_2021                    esriFieldTypeInteger       year_2021
+  year_2022                    esriFieldTypeInteger       year_2022
+  TruckPercent_2020            esriFieldTypeInteger       TruckPercent_2020
+  TruckPercent_2021            esriFieldTypeInteger       TruckPercent_2021
+  TruckPercent_2022            esriFieldTypeInteger       TruckPercent_2022
+  year_2023                    esriFieldTypeInteger       year_2023
+  year_2024                    esriFieldTypeInteger       year_2024
+  year_2025                    esriFieldTypeInteger       year_2025
+  year_2026                    esriFieldTypeInteger       year_2026
+  year_2027                    esriFieldTypeInteger       year_2027
+  year_2028                    esriFieldTypeInteger       year_2028
+  year_2029                    esriFieldTypeInteger       year_2029
+  year_2030                    esriFieldTypeInteger       year_2030
+  year_2031                    esriFieldTypeInteger       year_2031
+  year_2032                    esriFieldTypeInteger       year_2032
+  year_2033                    esriFieldTypeInteger       year_2033
+  year_2034                    esriFieldTypeInteger       year_2034
+  year_2035                    esriFieldTypeInteger       year_2035
+  year_2036                    esriFieldTypeInteger       year_2036
+  year_2037                    esriFieldTypeInteger       year_2037
+  year_2038                    esriFieldTypeInteger       year_2038
+  year_2039                    esriFieldTypeInteger       year_2039
+  year_2040                    esriFieldTypeInteger       year_2040
+  year_2041                    esriFieldTypeInteger       year_2041
+  year_2042                    esriFieldTypeInteger       year_2042
+  year_2043                    esriFieldTypeInteger       year_2043
+  year_2044                    esriFieldTypeInteger       year_2044
+  year_2045                    esriFieldTypeInteger       year_2045
+  year_2046                    esriFieldTypeInteger       year_2046
+  year_2047                    esriFieldTypeInteger       year_2047
+  year_2048                    esriFieldTypeInteger       year_2048
+  year_2049                    esriFieldTypeInteger       year_2049
+  year_2050                    esriFieldTypeInteger       year_2050
+  TruckPercent_2023            esriFieldTypeInteger       TruckPercent_2023
+  TruckPercent_2024            esriFieldTypeInteger       TruckPercent_2024
+  TruckPercent_2025            esriFieldTypeInteger       TruckPercent_2025
+  TruckPercent_2026            esriFieldTypeInteger       TruckPercent_2026
+  TruckPercent_2027            esriFieldTypeInteger       TruckPercent_2027
+  TruckPercent_2028            esriFieldTypeInteger       TruckPercent_2028
+  TruckPercent_2029            esriFieldTypeInteger       TruckPercent_2029
+  TruckPercent_2030            esriFieldTypeInteger       TruckPercent_2030
+  TruckPercent_2031            esriFieldTypeInteger       TruckPercent_2031
+  TruckPercent_2032            esriFieldTypeInteger       TruckPercent_2032
+  TruckPercent_2033            esriFieldTypeInteger       TruckPercent_2033
+  TruckPercent_2034            esriFieldTypeInteger       TruckPercent_2034
+  TruckPercent_2035            esriFieldTypeInteger       TruckPercent_2035
+  TruckPercent_2036            esriFieldTypeInteger       TruckPercent_2036
+  TruckPercent_2037            esriFieldTypeInteger       TruckPercent_2037
+  TruckPercent_2038            esriFieldTypeInteger       TruckPercent_2038
+  TruckPercent_2039            esriFieldTypeInteger       TruckPercent_2039
+  TruckPercent_2040            esriFieldTypeInteger       TruckPercent_2040
+  TruckPercent_2041            esriFieldTypeInteger       TruckPercent_2041
+  TruckPercent_2042            esriFieldTypeInteger       TruckPercent_2042
+  TruckPercent_2043            esriFieldTypeInteger       TruckPercent_2043
+  TruckPercent_2044            esriFieldTypeInteger       TruckPercent_2044
+  TruckPercent_2045            esriFieldTypeInteger       TruckPercent_2045
+  TruckPercent_2046            esriFieldTypeInteger       TruckPercent_2046
+  TruckPercent_2047            esriFieldTypeInteger       TruckPercent_2047
+  TruckPercent_2048            esriFieldTypeInteger       TruckPercent_2048
+  TruckPercent_2049            esriFieldTypeInteger       TruckPercent_2049
+  TruckPercent_2050            esriFieldTypeInteger       TruckPercent_2050
+  Control_LM                   esriFieldTypeDouble        Control_LM
+  Shape__Length                esriFieldTypeDouble        Shape.STLength()
+  CountType                    esriFieldTypeString        CountType
+  CountTypeSummary             esriFieldTypeString        CountTypeSummary
+
+======================================================================
+3. YEAR-COLUMN DISCOVERY
+======================================================================
+  year columns found : 65
+  earliest year col  : 1986  (year_1986)
+  latest year col    : 2050 (TruckPercent_2050)
+  reaches 2008?      : YES
+
+  detected county field  : County_Station
+  detected station field : County_Station
+  latest-year pointer    : Year_ADT
+
+  TOTAL FEATURES: 12963
+
+======================================================================
+4. SAMPLE RECORD (so you can see county/station encoding)
+======================================================================
+  OBJECTID                     = 220541
+  County_Station               = 450048
+  Latitude_Use                 = 36.30177
+  Longtitude_Use               = -92.78907
+  stat                         = 0048
+  year_2016                    = 470
+  year_2015                    = 380
+  year_2014                    = 430
+  year_2013                    = 360
+  year_2012                    = 350
+  year_2011                    = 340
+  year_2010                    = 350
+  year_2009                    = 310
+  year_2008                    = 330
+  year_2007                    = 340
+  year_2006                    = 330
+  year_2005                    = 360
+  year_2004                    = 350
+  year_2003                    = 360
+  year_2002                    = 330
+  year_2001                    = 300
+  year_2000                    = 340
+  year_1999                    = 370
+  year_1998                    = 310
+  year_1997                    = 960
+  year_1996                    = 370
+  year_1995                    = 860
+  year_1994                    = 0
+  year_1993                    = 0
+  year_1992                    = 0
+  year_1991                    = 0
+  year_1990                    = 0
+  year_1989                    = 0
+  year_1988                    = 0
+  year_1987                    = 0
+  year_1986                    = 0
+  AH_RoadID                    = 45x125x1xA
+  AH_BLM                       = 0.0
+  AH_ELM                       = 7.348
+  TruckPercent                 = None
+  year_2017                    = 550
+  County                       = 45
+  Route                        = 125
+  Section                      = 1
+  Direction                    = A
+  RuralUrbaArea                = 1
+  TypeRoad                     = 1
+  RouteSign                    = 3
+  AH_District                  = 9
+  created_user                 = TPPGIS
+  created_date                 = 1762016015000
+  last_edited_user             = TPPGIS
+  last_edited_date             = 1777904578000
+  AH_Length                    = 7.348
+  MostRecentADT                = 590
+  Comment                      = Actual Station
+  GlobalID                     = {4E061105-8602-4FDC-B8E4-CC28F9460C5E}
+  DIS_County                   = 45
+  DIS_Inset                    = None
+  DIS_State                    = None
+  year_2018                    = 440
+  DIS_COLOR                    = Current
+  year_2019                    = 480
+  True_County_Station          = None
+  TruckPercent_1996            = None
+  TruckPercent_1997            = None
+  TruckPercent_1998            = None
+  TruckPercent_1999            = None
+  TruckPercent_2000            = None
+  TruckPercent_2001            = None
+  TruckPercent_2002            = None
+  TruckPercent_2003            = None
+  TruckPercent_2004            = None
+  TruckPercent_2005            = None
+  TruckPercent_2006            = None
+  TruckPercent_2007            = None
+  TruckPercent_2008            = None
+  TruckPercent_2009            = None
+  TruckPercent_2010            = None
+  TruckPercent_2011            = None
+  TruckPercent_2012            = None
+  TruckPercent_2013            = None
+  TruckPercent_2014            = None
+  TruckPercent_2015            = None
+  TruckPercent_2016            = None
+  TruckPercent_2017            = None
+  TruckPercent_2018            = None
+  TruckPercent_2019            = None
+  Year_TruckPercent            = None
+  label2                       = 590
+  ATR_Type                     = None
+  Year_ADT                     = 2025
+  year_2020                    = 560
+  year_2021                    = 490
+  year_2022                    = 500
+  TruckPercent_2020            = None
+  TruckPercent_2021            = None
+  TruckPercent_2022            = None
+  year_2023                    = 500
+  year_2024                    = 530
+  year_2025                    = 590
+  year_2026                    = None
+  year_2027                    = None
+  year_2028                    = None
+  year_2029                    = None
+  year_2030                    = None
+  year_2031                    = None
+  year_2032                    = None
+  year_2033                    = None
+  year_2034                    = None
+  year_2035                    = None
+  year_2036                    = None
+  year_2037                    = None
+  year_2038                    = None
+  year_2039                    = None
+  year_2040                    = None
+  year_2041                    = None
+  year_2042                    = None
+  year_2043                    = None
+  year_2044                    = None
+  year_2045                    = None
+  year_2046                    = None
+  year_2047                    = None
+  year_2048                    = None
+  year_2049                    = None
+  year_2050                    = None
+  TruckPercent_2023            = None
+  TruckPercent_2024            = None
+  TruckPercent_2025            = None
+  TruckPercent_2026            = None
+  TruckPercent_2027            = None
+  TruckPercent_2028            = None
+  TruckPercent_2029            = None
+  TruckPercent_2030            = None
+  TruckPercent_2031            = None
+  TruckPercent_2032            = None
+  TruckPercent_2033            = None
+  TruckPercent_2034            = None
+  TruckPercent_2035            = None
+  TruckPercent_2036            = None
+  TruckPercent_2037            = None
+  TruckPercent_2038            = None
+  TruckPercent_2039            = None
+  TruckPercent_2040            = None
+  TruckPercent_2041            = None
+  TruckPercent_2042            = None
+  TruckPercent_2043            = None
+  TruckPercent_2044            = None
+  TruckPercent_2045            = None
+  TruckPercent_2046            = None
+  TruckPercent_2047            = None
+  TruckPercent_2048            = None
+  TruckPercent_2049            = None
+  TruckPercent_2050            = None
+  Control_LM                   = 4.77
+  Shape__Length                = 11825.129098017858
+  CountType                    = V
+  CountTypeSummary             = V
+
+======================================================================
+5. DISTINCT COUNTY VALUES (first 80)
+======================================================================
+  0 distinct value(s):
+  
+
+======================================================================
+6. PER-YEAR NON-NULL COVERAGE FOR TREATED COUNTIES
+======================================================================
+
+  BOONE  (segments matched: 0)
+    no segments matched this name -- check encoding in section 5.
+
+  BENTON  (segments matched: 0)
+    no segments matched this name -- check encoding in section 5.
+
+  SHARP  (segments matched: 0)
+    no segments matched this name -- check encoding in section 5.
+
+  MADISON  (segments matched: 0)
+    no segments matched this name -- check encoding in section 5.
+
+======================================================================
+WHAT TO CHECK
+======================================================================
+  - Section 3: does 'reaches 2008' say YES? If the earliest year
+    column is e.g. 2013, the segment series can't anchor the 2010/
+    2012 cohorts -- same coverage wall as the county VMT.
+  - Section 6: are the early years populated for Boone/Benton, or do
+    they read 0/N? Sparse early years => corridor test starts later.
+  - If county is numeric-coded, grab the number from section 5 and
+    rerun with TARGET set to those numbers.

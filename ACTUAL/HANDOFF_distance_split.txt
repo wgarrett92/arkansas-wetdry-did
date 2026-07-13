@@ -1,0 +1,255 @@
+================================================================================
+HANDOFF -- Distance median split + contamination split + dose-response + jackknife
+Target file to build/run:  04_heterogeneity_robustness.do
+Prepared 2026-07-01 for Will to execute.  See ANALYSIS_LOG.txt #9,#14,#15 for context.
+================================================================================
+
+0.  OBJECTIVE & THE FOUR SUB-ANALYSES
+------------------------------------------------------------------------
+The paper's mechanism is the ATTRACTOR: a newly-wet county draws impaired
+drivers from still-dry neighbors, so the crash effect should be MOST POSITIVE
+where the catchment is largest -- rural, far from other wet retail, in-state
+isolated. These four cuts test that, all under the HEADLINE spec (within-county,
+always-dry controls; see Section 3):
+
+  5a. DISTANCE MEDIAN SPLIT  -- split treated on PRE-treatment distance-to-wet.
+        Primary metric  dist_border_aug ; robustness dist_popcen_aug.
+        PREDICT: far > near (attractor stronger when the pre-wet trip was longer).
+  5b. CONTAMINATION SPLIT    -- split on nearest_wet_is_oos (pre-treatment).
+        PREDICT: the in-state group is cleaner; OOS-nearest treated had an escape
+        valve across the state line pre-treatment, muddying the distance read.
+  5c. DOSE-RESPONSE          -- rural_nonadj > rural_adjacent > urban.
+        PREDICT: positive effect CONCENTRATES in the isolated rural cells.
+  5d. JACKKNIFE-BY-COHORT    -- drop each treated cohort once; show no single
+        cohort drives the headline ATT / pre-trend.
+
+NOTE the cuts are correlated proxies for the same latent "catchment size":
+far-distance and rural-nonadjacent overlap heavily (Boone/Clark/Columbia/Polk/
+Sharp are in BOTH). That is expected -- report them as convergent evidence, not
+independent tests.
+
+
+1.  KEY DATA FACTS (the 13 treated counties)
+------------------------------------------------------------------------
+Static PRE-treatment distances live in  pretreatment_distance_by_treated_v2.csv
+(one row per treated county, measured at pre_year = cohort-1). border_aug is the
+PRIMARY metric (pop-centroid -> nearest wet county BORDER, OOS-augmented).
+
+  fips   county        cohort  border_aug  popcen_aug  oos  rural  nonadj  adj
+  05009  Boone         2010    11.156      24.459      0    1      1       0
+  05019  Clark         2010    12.683      28.191      0    1      1       0
+  05007  Benton        2012     8.524      16.836      0    0      0       0
+  05087  Madison       2012    10.626      23.267      0    0      0       0
+  05135  Sharp         2012    22.156      30.293      1    1      1       0
+  05027  Columbia      2014    11.192      32.077      0    1      1       0
+  05125  Saline        2014     6.218      18.000      0    0      0       0
+  05081  Little River  2016     7.470      18.223      1    0      0       0
+  05121  Randolph      2018    10.479      25.017      0    1      1       0
+  05133  Sevier        2020     9.804      22.583      1    1      0       1
+  05141  Van Buren     2020     8.470      29.345      0    1      0       1
+  05059  Hot Spring    2022     3.881      14.900      0    1      0       1
+  05113  Polk          2022    11.540      35.165      1    1      1       0
+  (rural = rural_2013 ; nonadj = rural_nonadj_2013 ; adj = rucc_adjacent_2013 ;
+   oos = nearest_wet_is_oos.  Madison is g2012 & URBAN only AFTER the recode --
+   the raw CSV still shows it never-treated; the patch fixes it in-Stata.)
+
+  MEDIAN border_aug over the 13 treated = 10.479 mi (Randolph). Robust to
+  dropping g2022 (still 10.48). far = border_aug > median:
+     FAR (6):  Madison 10.63, Boone 11.16, Columbia 11.19, Polk 11.54,
+               Clark 12.68, Sharp 22.16
+     NEAR (7): Hot Spring 3.88, Saline 6.22, Little River 7.47, Van Buren 8.47,
+               Benton 8.52, Sevier 9.80, Randolph 10.48
+  Under popcen_aug the median is ~24.46 (Boone) and membership MOVES -- report
+  both; that membership shift is itself a finding (README BORDER KEY FINDINGS).
+
+
+2.  THE ONE DATA TRAP -- year-varying vs static distance  (do NOT skip)
+------------------------------------------------------------------------
+The analysis panel column dist_border_aug is YEAR-VARYING (nearest wet moves as
+neighbors flip). The median split must use the PRE-treatment (cohort-1) STATIC
+per-county value, NOT the time-varying column. So:
+  - LEFT-MERGE pretreatment_distance_by_treated_v2.csv onto the panel keyed on
+    fips (m:1), bringing border_aug/popcen_aug/nearest_wet_is_oos in as *_pre.
+  - Controls (never-treated) get MISSING *_pre -- correct; they have no
+    pre-treatment distance and are NOT split on distance (see Section 3).
+Splitting on the raw dist_border_aug column is the classic mistake here.
+
+
+3.  ESTIMATION DESIGN FOR A SPLIT (crucial -- differs from a simple `keep`)
+------------------------------------------------------------------------
+You CANNOT `keep if far==1` -- that deletes the control pool. A distance/dose
+attribute is defined on TREATED units only; the always-DRY controls are SHARED
+across arms. So each arm = {its treated subset} + {ALL always-dry controls}:
+
+     far arm  sample:  (cohort>0 & far_b==1) | always_dry==1
+     near arm sample:  (cohort>0 & far_b==0) | always_dry==1
+
+Then run the HEADLINE spec on that subsample:
+     csdid Y log_pop poverty_rate if <arm>, ///
+         ivar(county_id) time(year) gvar(cohort) method(reg) notyet
+
+This is the same within-county always-dry design promoted to headline (#14):
+gvar(cohort), notyet, method(reg), xvars(log_pop poverty_rate). always_dry and
+est_sample are built by patch_madison_sebastian.do. Report the SIMPLE ATT and
+the INTERPRETABLE Pre_avg (estat event), NOT the joint estat pretrend (its p is
+r(pchi2) and rejects on cell noise -- learned in #15).
+
+CAVEAT -- small cells. Far=6, near=7 treated; dose arms are 6/3/4; some are
+single-cohort. csdid can fail or be very noisy on 3-4 treated across few cohorts.
+Wrap every csdid/estat in `capture noisily`, expect some arms to return nothing,
+and say so in the paper rather than over-reading a lone significant cell.
+
+
+4.  SPEC / ENVIRONMENT
+------------------------------------------------------------------------
+  Panel:   arkansas_panel_annual_border_vmt_nonalc_rucc_origin.csv (84 col)
+  Recode:  `do patch_madison_sebastian.do` right after import (Madison g2012;
+           builds est_sample, always_dry, log_pop, partial_wet). QC asserts pass.
+  Outcomes: fatal_crashes, alcohol_fatal_crashes, nonalc_fatal_crashes
+  Stata:   /Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do 04_heterogeneity_robustness.do
+           (run from ACTUAL/; sandbox-disabled for long csdid).
+  Output:  het_distance_results.csv (suggest), + optional per-arm event PNGs.
+
+
+5.  RUNNABLE SKELETON  (starting point -- review the cell-size handling)
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+* 04_heterogeneity_robustness.do
+* Distance median split + contamination + dose-response + jackknife.
+* HEADLINE spec (within-county always-dry). See HANDOFF_distance_split.txt +
+* ANALYSIS_LOG #15. Append an ANALYSIS_LOG entry when you finalize results.
+clear all
+set more off
+
+* -- 1. load + recode ---------------------------------------------------
+import delimited "arkansas_panel_annual_border_vmt_nonalc_rucc_origin.csv", ///
+    varnames(1) clear
+destring fips year fatal_crashes alcohol_fatal_crashes nonalc_fatal_crashes ///
+    countywide_wet first_treated_year cohort years_since_treatment treated_unit ///
+    neighbor_unit total_pop poverty_rate rural_2013 rucc_adjacent_2013 ///
+    rural_nonadj_2013, replace force
+do patch_madison_sebastian.do          // Madison g2012; est_sample; always_dry; log_pop
+egen county_id = group(fips)
+xtset county_id year
+
+* -- 2. broadcast STATIC pre-treatment distance (Section 2) -------------
+preserve
+    import delimited "pretreatment_distance_by_treated_v2.csv", varnames(1) clear
+    destring fips border_aug popcen_aug nearest_wet_is_oos, replace force
+    rename border_aug         dist_border_pre
+    rename popcen_aug         dist_popcen_pre
+    rename nearest_wet_is_oos oos_pre
+    keep fips dist_border_pre dist_popcen_pre oos_pre
+    tempfile predist
+    save `predist'
+restore
+merge m:1 fips using `predist', keep(master match) nogen   // controls -> missing
+
+* -- 3. treated-only split attributes ----------------------------------
+quietly summarize dist_border_pre if cohort>0, detail
+local med_b = r(p50)
+di as txt "median border_aug (treated) = `med_b'"
+gen byte far_b = (dist_border_pre > `med_b') if cohort>0     // 1=far 0=near .=ctrl
+quietly summarize dist_popcen_pre if cohort>0, detail
+gen byte far_p = (dist_popcen_pre > r(p50)) if cohort>0      // robustness metric
+
+* -- helper: headline within-county csdid on an arm; grab ATT + Pre_avg -
+*    (mirrors 04b _grab_het: estat simple -> R[1,1]/R[4,1]; Pre_avg from
+*     estat event r(table); joint p is r(pchi2), reported but not judged)
+program define _armfit, rclass
+    args y ifc
+    return scalar att=. \ return scalar p=. \ return scalar preavg=. ///
+        \ return scalar preavg_p=. \ return scalar n=.
+    capture noisily csdid `y' log_pop poverty_rate `ifc', ///
+        ivar(county_id) time(year) gvar(cohort) method(reg) notyet
+    if _rc exit
+    estimates store _a
+    quietly count if e(sample)
+    return scalar n = r(N)
+    capture noisily estat simple
+    capture matrix R = r(table)
+    return scalar att = cond(_rc,.,R[1,1])
+    return scalar p   = cond(_rc,.,R[4,1])
+    estimates restore _a
+    capture noisily estat event
+    capture matrix E = r(table)
+    if !_rc {
+        local en : colnames E
+        local j=1
+        foreach nm of local en {
+            if "`nm'"=="Pre_avg" {
+                return scalar preavg   = E[1,`j']
+                return scalar preavg_p = E[4,`j']
+            }
+            local ++j
+        }
+    }
+    capture estimates drop _a
+end
+
+tempname pf
+postfile `pf' str12 analysis str10 arm str16 outcome ///
+    double att double p double preavg double preavg_p long n ///
+    using "het_distance_results.dta", replace
+
+* -- 5a. distance median split (border primary; add far_p for popcen) ---
+foreach y in fatal_crashes alcohol_fatal_crashes nonalc_fatal_crashes {
+    _armfit `y' "if (cohort>0 & far_b==1) | always_dry==1"
+    post `pf' ("dist_border") ("far")  ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+    _armfit `y' "if (cohort>0 & far_b==0) | always_dry==1"
+    post `pf' ("dist_border") ("near") ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+}
+
+* -- 5b. contamination split (pre-treatment nearest_wet_is_oos) ---------
+foreach y in fatal_crashes alcohol_fatal_crashes nonalc_fatal_crashes {
+    _armfit `y' "if (cohort>0 & oos_pre==1) | always_dry==1"
+    post `pf' ("contam") ("oos")     ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+    _armfit `y' "if (cohort>0 & oos_pre==0) | always_dry==1"
+    post `pf' ("contam") ("instate") ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+}
+
+* -- 5c. dose-response (attractor strength) -----------------------------
+foreach y in fatal_crashes alcohol_fatal_crashes nonalc_fatal_crashes {
+    _armfit `y' "if (cohort>0 & rural_nonadj_2013==1) | always_dry==1"
+    post `pf' ("dose") ("rural_nonadj") ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+    _armfit `y' "if (cohort>0 & rucc_adjacent_2013==1) | always_dry==1"
+    post `pf' ("dose") ("rural_adj")    ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+    _armfit `y' "if (cohort>0 & rural_2013==0) | always_dry==1"
+    post `pf' ("dose") ("urban")        ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+}
+
+* -- 5d. jackknife-by-cohort (headline; drop one treated cohort each) ---
+levelsof cohort if cohort>0, local(cohs)
+foreach y in fatal_crashes alcohol_fatal_crashes {
+    foreach c of local cohs {
+        _armfit `y' "if est_sample==1 & cohort!=`c'"
+        post `pf' ("jackknife") ("drop`c'") ("`y'") (r(att)) (r(p)) (r(preavg)) (r(preavg_p)) (r(n))
+    }
+}
+postclose `pf'
+
+use "het_distance_results.dta", clear
+gen sig    = cond(p<.01,"***",cond(p<.05,"**",cond(p<.10,"*","")))
+gen pre_ok = cond(missing(preavg_p),"",cond(preavg_p>=.10,"PASS","REJECT"))
+order analysis arm outcome att p sig preavg preavg_p pre_ok n
+list, sepby(analysis outcome) noobs abbrev(20)
+export delimited using "het_distance_results.csv", replace
+di _n "Wrote het_distance_results.csv"
+------------------------------------------------------------------------
+
+  (`\` continuation of the return-scalar init line is illustrative -- Stata does
+   not accept `\` as a line joiner; write those five `return scalar ... = .`
+   statements on separate lines, exactly as 04b's _grab_het does.)
+
+
+6.  WHEN DONE -- documentation (standing convention)
+------------------------------------------------------------------------
+Append an ANALYSIS_LOG.txt PART-A entry (#17): DECISION (the four cuts +
+metrics), WHY (attractor catchment prediction), HOW (04_heterogeneity_robustness
+.do + this handoff), RESULT (far vs near, dose ordering, jackknife stability),
+PAPER (Heterogeneity section -- convergent attractor evidence; note small cells).
+Update README NEXT STEPS (uncheck -> done) and the PART C open-items list.
+Interpretation to test against #15: 04b found the RUCC rural/urban ALCOHOL
+reversal did NOT survive in point estimates -- does the distance/dose cut recover
+a monotone catchment gradient, or corroborate the attenuation? Report honestly.
+================================================================================
